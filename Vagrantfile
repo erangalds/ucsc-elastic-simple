@@ -12,10 +12,10 @@ Vagrant.configure("2") do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://vagrantcloud.com/search.
-  config.vm.box = "generic/ubuntu2204"
+  config.vm.box = "generic/ubuntu2304"
   #config.vm.provider = "hyperv"
   config.vm.hostname = "elk-single.ucsc.lk"
-  config.vm.network "public_network", bridge: "Default Switch"
+  config.vm.network "public_network", bridge: "Default Switch", ip: "172.31.52.67", netmask: 20
   #config.vm.memory = 1024
 
   # Disable automatic box update checking. If you disable this, then
@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine and only allow access
   # via 127.0.0.1 to disable public access
-  config.vm.network "forwarded_port", guest: 5601, host: 5601, host_ip: "127.0.0.1"
+  #config.vm.network "forwarded_port", guest: 5601, host: 5601, host_ip: "127.0.0.1"
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
