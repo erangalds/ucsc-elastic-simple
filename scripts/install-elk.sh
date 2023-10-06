@@ -1,3 +1,4 @@
+#!/bin/bash
 # Installing required common software
 sudo apt update
 sudo apt install wget vim
@@ -14,3 +15,13 @@ sudo apt install kibana
 sudo apt install logstash
 sudo apt install filebeat
 sudo apt install metricbeat
+
+# Deleting Folders if exists
+[ -d /etc/elasticsearch/certs/ca ] && rm -rf /etc/elasticsearch/certs/ca
+[ -d /etc/elasticsearch/certs/elastic ] && rm -rf /etc/elasticsearch/certs/elastic
+[ -d /etc/kibana/certs ] && rm -rf /etc/kibana/certs
+
+# Creating Required Folders
+sudo mkdir /etc/elasticsearch/certs/ca
+sudo mkdir /etc/elasticsearch/certs/elastic
+sudo mkdir /etc/kibana/certs
