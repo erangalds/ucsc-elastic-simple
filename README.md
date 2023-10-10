@@ -37,6 +37,7 @@ linux command prompt > cd /usr/share/kibana/bin
 
 linux command prompt > sudo ./kibana-keystore add elasticsearch.serviceAccountToken
 
+
 Now we can start the services. 
 
 linux command prompt > sudo systemctl daemon-reload
@@ -60,5 +61,13 @@ https://<ip address>:5601
 We should get a warning from the browser, but we can click continue / proceed. That should lead us to the kibana page. The user name is elastic and the password is the auto generated password. 
 
 
+NOTE: 
+If the Kibana Service doesn't come up and no log is written to the /var/log/kibana/kibana.log file. Then we have to un-comment one option at the node.options file. 
+
+The below line needs to be commented
+
+--unhandled-rejections=warn 
+
+After that we can start the services
 
 
