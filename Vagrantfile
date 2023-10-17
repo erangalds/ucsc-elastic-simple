@@ -25,4 +25,6 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", path: "scripts/copy-files.sh"
   config.vm.provision "shell", path: "scripts/change-file-ownership.sh"
   
+  # Changing the IP to a static IP
+  config.vm.provision "shell", path: "scripts/change-ip-to-static.sh"
 end
