@@ -37,6 +37,7 @@ linux command prompt > cd /usr/share/kibana/bin
 
 linux command prompt > sudo ./kibana-keystore add elasticsearch.serviceAccountToken
 
+
 Now we can start the services. 
 
 linux command prompt > sudo systemctl daemon-reload
@@ -124,5 +125,13 @@ sudo /usr/share/metricbeat/bin/metricbeat keystore add ES_METRICBEAT_API_KEY -c 
 
 
 
+NOTE: 
+If the Kibana Service doesn't come up and no log is written to the /var/log/kibana/kibana.log file. Then we have to un-comment one option at the node.options file. 
+
+The below line needs to be commented
+
+--unhandled-rejections=warn 
+
+After that we can start the services
 
 
