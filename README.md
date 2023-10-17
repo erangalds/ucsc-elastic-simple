@@ -59,6 +59,70 @@ https://<ip address>:5601
 
 We should get a warning from the browser, but we can click continue / proceed. That should lead us to the kibana page. The user name is elastic and the password is the auto generated password. 
 
+### Setting up Metricbeat in Elasticsearch Server
+We need to edit the metricbeat.yml file sitting in /etc/metricbeat/ directory. 
+
+section:
+metricbeat.config.modules:
+    reload.enabled: true
+
+Dashboards
+setup.dashboards.enabled: true
+
+Kibana
+setup.kibana:
+    host: "https://elk-single-node:5601
+
+Elasticsearch
+output.elasticsearch:
+    hosts: ["elk-single-node:9200"]
+    ssl.certificate_authorities: ["/etc/metricbeat/certs/ca/ca.pem"]
+    protocol: "https"
+    #api_key:"${ES_METRICBEAT_API_KEY}"
+    username: "elastic"
+    password: "changeme"
+
+We can then test the config and connection to the elasticsearch cluster
+sudo /usr/share/metricbeat/bin/metricbeat test config -c /etc/metricbeat/metricbeat.yml --path.home /usr/share/metricbeat --path.data /var/lib/metricbeat
+
+sudo /usr/share/metricbeat/bin/metricbeat test output -c /etc/metricbeat/metricbeat.yml --path.home /usr/share/metricbeat --path.data /var/lib/metricbeat
+
+sudo /usr/share/metricbeat/bin/metricbeat setup -c /etc/metricbeat/metricbeat.yml --path.home /usr/share/metricbeat --path.data /var/lib/metricbeat
+
+This should setup the sample plug and play dashboards into kibana for metricbeat. 
+
+Then we need to create a role with the required privileges and  create a new user and assign that role to the user. 
+
+role: metricbeat-user-role --> 
+Cluster Privileges: monitor, read_ilm
+Index Privileges
+    indices: metricbeat-*
+    privileges: create_doc
+
+User: metricbeat-user
+privileges: roles
+    metricbeat-user, editor
+
+Generating an API KEY for the user
+POST /_security/api_key/grant
+{
+    "grant_type": "password",
+    "username": "metricbeat-user",
+    "password": "UCSC@1234",
+    "api_key": {
+        "name":"metricbeat-user"
+    }
+}
+
+Get the generated API Key Details Copied We need the ID:API_KEY
+
+id:api_key
+
+Creating a KEY int the KEYSTORE where the information will be auto loaded as an environment variable. 
+
+sudo /usr/share/metricbeat/bin/metricbeat keystore add ES_METRICBEAT_API_KEY -c /etc/metricbeat/metricbeat.yml --path.home /usr/share/metricbeat --path.data /var/lib/metricbeat
+
+
 
 
 
