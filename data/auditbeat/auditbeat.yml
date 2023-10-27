@@ -156,7 +156,7 @@ output.elasticsearch:
   #api_key: "${ES_AUDITBEAT_API_KEY}"
   #api_key: "w66pRYsByyprsCuQHfXM:pNQmxRpuQw-ssSjDnFiPZw"
   username: "elastic"
-  password: "NOqHWk3_TDSHnH--nVAE"
+  password: "Ucsc@1234"
 
 # ------------------------------ Logstash Output -------------------------------
 #output.logstash:

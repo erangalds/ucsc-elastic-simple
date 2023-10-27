@@ -101,9 +101,9 @@ output.elasticsearch:
   # Authentication credentials - either API key or username/password.
   #api_key: "id:api_key"
   #api_key: "${ES_METRICBEAT_API_KEY}"
-  api_key: "maiRQosByyprsCuQT9mb:TA9QdnESTG2RPpMxAq9kSg"
-  #username: "elastic"
-  #password: "NOqHWk3_TDSHnH--nVAE"
+  #api_key: "maiRQosByyprsCuQT9mb:TA9QdnESTG2RPpMxAq9kSg"
+  username: "elastic"
+  password: "Ucsc@1234"
 
 # ------------------------------ Logstash Output -------------------------------
 #output.logstash:

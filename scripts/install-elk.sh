@@ -1,7 +1,7 @@
 #!/bin/bash
 # Installing required common software
 sudo apt update
-sudo apt install wget vim
+sudo apt install wget vim dos2unix
 # Importing the PGP Key of the Elastic Binaries
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 # Install Required Pluggins
@@ -15,13 +15,25 @@ sudo apt install kibana
 sudo apt install logstash
 sudo apt install filebeat
 sudo apt install metricbeat
+sudo apt install auditbeat
+sudo apt install packetbeat
+#sudo apt install heartbeat
 
 # Deleting Folders if exists
 [ -d /etc/elasticsearch/certs/ca ] && rm -rf /etc/elasticsearch/certs/ca
 [ -d /etc/elasticsearch/certs/elastic ] && rm -rf /etc/elasticsearch/certs/elastic
 [ -d /etc/kibana/certs ] && rm -rf /etc/kibana/certs
+[ -d /etc/filebeat/certs/ca ] && rm -rf /etc/filebeat/certs/ca
+[ -d /etc/metricbeat/certs/ca ] && rm -rf /etc/metricbeat/certs/ca
+[ -d /etc/auditbeat/certs/ca ] && rm -rf /etc/auditbeat/certs/ca
+[ -d /etc/packetbeat/certs/ca ] && rm -rf /etc/packetbeat/certs/ca
 
 # Creating Required Folders
 sudo mkdir /etc/elasticsearch/certs/ca
 sudo mkdir /etc/elasticsearch/certs/elastic
 sudo mkdir /etc/kibana/certs
+sudo mkdir /etc/filebeat/certs/ca
+sudo mkdir /etc/metricbeat/certs/ca
+sudo mkdir /etc/auditbeat/certs/ca
+sudo mkdir /etc/packetbeat/certs/ca
+

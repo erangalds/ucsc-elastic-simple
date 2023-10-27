@@ -147,7 +147,7 @@ output.elasticsearch:
   #api_key: "${ES_FILEBEAT_API_KEY}"
   #api_key: "id:api_key"
   username: "elastic"
-  password: "NOqHWk3_TDSHnH--nVAE"
+  password: "Ucsc@1234"
 
 # ------------------------------ Logstash Output -------------------------------
 #output.logstash:

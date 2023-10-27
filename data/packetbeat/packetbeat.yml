@@ -219,10 +219,10 @@ output.elasticsearch:
   protocol: "https"
 
   # Authentication credentials - either API key or username/password.
-  api_key: "${ES_PACKETBEAT_API_KEY}"
+  #api_key: "${ES_PACKETBEAT_API_KEY}"
   #api_key: "id:api_key"
-  #username: "elastic"
-  #password: "NOqHWk3_TDSHnH--nVAE"
+  username: "elastic"
+  password: "Ucsc@1234"
 
 # ------------------------------ Logstash Output -------------------------------
 #output.logstash:

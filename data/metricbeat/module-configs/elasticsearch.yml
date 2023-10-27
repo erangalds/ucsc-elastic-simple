@@ -1,0 +1,12 @@
+# Module: elasticsearch
+# Docs: https://www.elastic.co/guide/en/beats/metricbeat/8.10/metricbeat-module-elasticsearch.html
+
+- module: elasticsearch
+  #metricsets:
+  #  - node
+  #  - node_stats
+  period: 10s
+  hosts: ["https://elk-single-node:9200"]
+  username: "elastic"
+  password: "Ucsc@1234"
+  #api_key: "foo:bar"
