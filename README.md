@@ -395,7 +395,7 @@ id:api_key
 Creating a KEY int the KEYSTORE where the information will be auto loaded as an environment variable. 
 
 linux command prompt> sudo /usr/share/auditbeat/bin/auditbeat keystore add ES_AUDITBEAT_API_KEY -c /etc/auditbeat/auditbeat.yml --path.home /usr/share/auditbeat --path.data /var/lib/auditbeat
-
+### Setting up Auditbeat in Elasticsearch Server
 
 
 
