@@ -132,7 +132,7 @@ Creating a KEY int the KEYSTORE where the information will be auto loaded as an 
 
 sudo /usr/share/metricbeat/bin/metricbeat keystore add ES_METRICBEAT_API_KEY -c /etc/metricbeat/metricbeat.yml --path.home /usr/share/metricbeat --path.data /var/lib/metricbeat
 
-
+### Setting up Auditbeat in Elasticsearch Server
 
 
 
