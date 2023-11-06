@@ -29,11 +29,11 @@ sudo apt install packetbeat
 [ -d /etc/packetbeat/certs/ca ] && rm -rf /etc/packetbeat/certs/ca
 
 # Creating Required Folders
-sudo mkdir /etc/elasticsearch/certs/ca
-sudo mkdir /etc/elasticsearch/certs/elastic
-sudo mkdir /etc/kibana/certs
-sudo mkdir /etc/filebeat/certs/ca
-sudo mkdir /etc/metricbeat/certs/ca
-sudo mkdir /etc/auditbeat/certs/ca
-sudo mkdir /etc/packetbeat/certs/ca
+sudo mkdir -p /etc/elasticsearch/certs/ca
+sudo mkdir -p /etc/elasticsearch/certs/elastic
+sudo mkdir -p /etc/kibana/certs
+sudo mkdir -p /etc/filebeat/certs/ca
+sudo mkdir -p /etc/metricbeat/certs/ca
+sudo mkdir -p /etc/auditbeat/certs/ca
+sudo mkdir -p /etc/packetbeat/certs/ca
 

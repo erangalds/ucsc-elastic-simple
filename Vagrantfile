@@ -25,13 +25,14 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", path: "scripts/install-elk.sh"
   # Copying the Configuration Files
   config.vm.provision "file", source: "data", destination: "$HOME/data"
-  config.vm.provision "file", source: "scripts/change-ip-to-static.sh", destination: "$HOME/scripts/change-ip-to-static.sh"
-  config.vm.provision "file", source: "scripts/start-services.sh", destination: "$HOME/scripts/start-services.sh"
+  config.vm.provision "file", source: "scripts", destination: "$HOME/scripts"
+  #config.vm.provision "file", source: "scripts/change-ip-to-static.sh", destination: "$HOME/scripts/change-ip-to-static.sh"
+  #config.vm.provision "file", source: "scripts/start-services.sh", destination: "$HOME/scripts/start-services.sh"
 
   # Invoking the Copy Files and File Permission Change Scripts
   config.vm.provision "shell", path: "scripts/copy-files.sh"
   config.vm.provision "shell", path: "scripts/change-file-ownership.sh"
-  
+
   # Below configuration is not needed for VirtualBoX Hypervisor. Its needed only if you are using Hyper-V as the Hypervisor
   # Changing the IP to a static IP
   # If Hyper-V Default Swtich type is used, then its better to run this command manually each time you start the VM
@@ -43,3 +44,4 @@ Vagrant.configure("2") do |config|
   # This will not change at each computer reboot. 
   #config.vm.provision "shell", path: "scripts/change-ip-to-static.sh"
 end
+
