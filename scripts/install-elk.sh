@@ -36,4 +36,5 @@ sudo mkdir -p /etc/filebeat/certs/ca
 sudo mkdir -p /etc/metricbeat/certs/ca
 sudo mkdir -p /etc/auditbeat/certs/ca
 sudo mkdir -p /etc/packetbeat/certs/ca
+sudo mkdir -p /etc/logstash/certs/ca
 

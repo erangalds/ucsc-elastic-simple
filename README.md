@@ -118,7 +118,7 @@ We should get a warning from the browser, but we can click continue / proceed. T
 > NOTE: 
 >
 >    If the Kibana Service doesn't come up and no log is written to the /var/log/kibana/kibana.log file. 
-    
+>    
 >   ```bash
 >    sudo journalctl -u kibana.service -n 75
 >   ```
@@ -137,311 +137,46 @@ We should get a warning from the browser, but we can click continue / proceed. T
 >   ```
 
 ### Setting up Metricbeat in Elasticsearch Server/
-We need to make a directory under the /etc/metricbeat to hold the certificate of the certificate authority. 
+For this simple lab, I have automatically added configured metricbeat configuration files as well as the configuration files for the metricbeat modules automatically. The metricbeat will use the user - elastic to loginto elasticsearch and stream data. 
 
-linux command prompt> sudo mkdir -p /etc/metricbeat/certs/ca 
+Let's configure the metricbeat now. 
 
-Then we need to copy the ca.crt certificate from the elasticsearch certs directory and place it here. 
-
-linux command prompt> sudo cp /etc/elasticsearch/certs/ca/ca.crt /etc/metricbeat/certs/ca/ca.crt
-
-Then we need to rename the ca.crt file to ca.pem file as the beats configuration needs the certificate in .pem format
-
-linux command prompt> sudo mv /etc/metricbeat/certs/ca/ca.crt /etc/metricbeat/certs/ca/ca.pem
-
-We need to edit the metricbeat.yml file sitting in /etc/metricbeat/ directory. 
-
-section:
-metricbeat.config.modules:
-    reload.enabled: true
-
-Dashboards
-setup.dashboards.enabled: true
-
-Kibana
-setup.kibana:
-    host: "https://elk-single-node:5601
-    ssl.certificate_authorities: ["/etc/metricbeat/certs/ca/ca.pem"]
-
-Elasticsearch
-output.elasticsearch:
-    hosts: ["elk-single-node:9200"]
-    ssl.certificate_authorities: ["/etc/metricbeat/certs/ca/ca.pem"]
-    protocol: "https"
-    #api_key:"${ES_METRICBEAT_API_KEY}"
-    username: "elastic"
-    password: "changeme"
-
-We can then test the config and connection to the elasticsearch cluster
-linux command prompt> sudo /usr/share/metricbeat/bin/metricbeat test config -c /etc/metricbeat/metricbeat.yml --path.home /usr/share/metricbeat --path.data /var/lib/metricbeat
-
-linux command prompt> sudo /usr/share/metricbeat/bin/metricbeat test output -c /etc/metricbeat/metricbeat.yml --path.home /usr/share/metricbeat --path.data /var/lib/metricbeat
-
-linux command prompt> sudo /usr/share/metricbeat/bin/metricbeat setup -c /etc/metricbeat/metricbeat.yml --path.home /usr/share/metricbeat --path.data /var/lib/metricbeat
-
-This should setup the sample plug and play dashboards into kibana for metricbeat. 
-
-Then we need to create a role with the required privileges and  create a new user and assign that role to the user. 
-
-role: metricbeat-user-role --> 
-Cluster Privileges: monitor, read_ilm
-Index Privileges
-    indices: metricbeat-*
-    privileges: create_doc,create_index
-
-User: metricbeat-user
-privileges: roles
-    metricbeat-user, editor
-
-Generating an API KEY for the user
-POST /_security/api_key/grant
-{
-    "grant_type": "password",
-    "username": "metricbeat-user",
-    "password": "UCSC@1234",
-    "api_key": {
-        "name":"metricbeat-user"
-    }
-}
-
-Get the generated API Key Details Copied We need the ID:API_KEY
-
-id:api_key
-
-Creating a KEY int the KEYSTORE where the information will be auto loaded as an environment variable. 
-
-linux command prompt> sudo /usr/share/metricbeat/bin/metricbeat keystore add ES_METRICBEAT_API_KEY -c /etc/metricbeat/metricbeat.yml --path.home /usr/share/metricbeat --path.data /var/lib/metricbeat
-
-
+```bash
+cd /home/vagrant/scripts/manually-configure
+## initializing metricbeat will test the config files, test the connection with elasticsearch and upload sample dashboards into kibana
+sudo  ./initialize-beats-metricbeat.sh
+```
 ### Setting up Packetbeat in Elasticsearch Server/
-We need to make a directory under the /etc/packetbeat to hold the certificate of the certificate authority. 
+For this simple lab, I have automatically added configured packetbeat configuration files as well as the configuration files for the packetbeat modules automatically. The packetbeat will use the user - elastic to loginto elasticsearch and stream data. 
 
-linux command prompt> sudo mkdir -p /etc/packetbeat/certs/ca 
+Let's configure the packetbeat now. 
 
-Then we need to copy the ca.crt certificate from the elasticsearch certs directory and place it here. 
-
-linux command prompt> sudo cp /etc/elasticsearch/certs/ca/ca.crt /etc/packetbeat/certs/ca/ca.crt
-
-Then we need to rename the ca.crt file to ca.pem file as the beats configuration needs the certificate in .pem format
-
-linux command prompt> sudo mv /etc/packetbeat/certs/ca/ca.crt /etc/packetbeat/certs/ca/ca.pem
-
-We need to edit the packetbeat.yml file sitting in /etc/packetbeat/ directory. 
-
-section:
-packetbeat.config.modules:
-    reload.enabled: true
-
-Dashboards
-setup.dashboards.enabled: true
-
-Kibana
-setup.kibana:
-    host: "https://elk-single-node:5601
-    ssl.certificate_authorities: ["/etc/packetbeat/certs/ca/ca.pem"]
-
-Elasticsearch
-output.elasticsearch:
-    hosts: ["elk-single-node:9200"]
-    ssl.certificate_authorities: ["/etc/packetbeat/certs/ca/ca.pem"]
-    protocol: "https"
-    #api_key:"${ES_PACKETBEAT_API_KEY}"
-    username: "elastic"
-    password: "changeme"
-
-We can then test the config and connection to the elasticsearch cluster
-linux command prompt> sudo /usr/share/packetbeat/bin/packetbeat test config -c /etc/packetbeat/packetbeat.yml --path.home /usr/share/packetbeat --path.data /var/lib/packetbeat
-
-linux command prompt> sudo /usr/share/packetbeat/bin/packetbeat test output -c /etc/packetbeat/packetbeat.yml --path.home /usr/share/packetbeat --path.data /var/lib/packetbeat
-
-linux command prompt> sudo /usr/share/packetbeat/bin/packetbeat setup -c /etc/packetbeat/packetbeat.yml --path.home /usr/share/packetbeat --path.data /var/lib/packetbeat
-
-This should setup the sample plug and play dashboards into kibana for packetbeat. 
-
-Then we need to create a role with the required privileges and  create a new user and assign that role to the user. 
-
-role: packetbeat-user-role --> 
-Cluster Privileges: monitor, read_ilm
-Index Privileges
-    indices: packetbeat-*
-    privileges: create_doc,create_index
-
-User: packetbeat-user
-privileges: roles
-    packetbeat-user, editor
-
-Generating an API KEY for the user
-POST /_security/api_key/grant
-{
-    "grant_type": "password",
-    "username": "packetbeat-user",
-    "password": "UCSC@1234",
-    "api_key": {
-        "name":"packetbeat-user"
-    }
-}
-
-Get the generated API Key Details Copied We need the ID:API_KEY
-
-id:api_key
-
-Creating a KEY int the KEYSTORE where the information will be auto loaded as an environment variable. 
-
-linux command prompt> sudo /usr/share/packetbeat/bin/packetbeat keystore add ES_PACKETBEAT_API_KEY -c /etc/packetbeat/packetbeat.yml --path.home /usr/share/packetbeat --path.data /var/lib/packetbeat
-
-
+```bash
+cd /home/vagrant/scripts/manually-configure
+## initializing packetbeat will test the config files, test the connection with elasticsearch and upload sample dashboards into kibana
+sudo  ./initialize-beats-packetbeat.sh
+```
 ### Setting up Filebeat in Elasticsearch Server/
-We need to make a directory under the /etc/filebeat to hold the certificate of the certificate authority. 
+For this simple lab, I have automatically added configured filebeat configuration files as well as the configuration files for the filebeat modules automatically. The filebeat will use the user - elastic to loginto elasticsearch and stream data. 
 
-linux command prompt> sudo mkdir -p /etc/filebeat/certs/ca 
+Let's configure the metricbeat now. 
 
-Then we need to copy the ca.crt certificate from the elasticsearch certs directory and place it here. 
-
-linux command prompt> sudo cp /etc/elasticsearch/certs/ca/ca.crt /etc/filebeat/certs/ca/ca.crt
-
-Then we need to rename the ca.crt file to ca.pem file as the beats configuration needs the certificate in .pem format
-
-linux command prompt> sudo mv /etc/filebeat/certs/ca/ca.crt /etc/filebeat/certs/ca/ca.pem
-
-We need to edit the filebeat.yml file sitting in /etc/filebeat/ directory. 
-
-section:
-filebeat.config.modules:
-    reload.enabled: true
-
-Dashboards
-setup.dashboards.enabled: true
-
-Kibana
-setup.kibana:
-    host: "https://elk-single-node:5601
-    ssl.certificate_authorities: ["/etc/filebeat/certs/ca/ca.pem"]
-
-Elasticsearch
-output.elasticsearch:
-    hosts: ["elk-single-node:9200"]
-    ssl.certificate_authorities: ["/etc/filecbeat/certs/ca/ca.pem"]
-    protocol: "https"
-    #api_key:"${ES_FILEBEAT_API_KEY}"
-    username: "elastic"
-    password: "changeme"
-
-We can then test the config and connection to the elasticsearch cluster
-linux command prompt> sudo /usr/share/filebeat/bin/filebeat test config -c /etc/filebeat/filebeat.yml --path.home /usr/share/filebeat --path.data /var/lib/filebeat
-
-linux command prompt> sudo /usr/share/filebeat/bin/filebeat test output -c /etc/filebeat/filebeat.yml --path.home /usr/share/filebeat --path.data /var/lib/filebeat
-
-linux command prompt> sudo /usr/share/filebeat/bin/filebeat setup -c /etc/filebeat/filebeat.yml --path.home /usr/share/filebeat --path.data /var/lib/filebeat
-
-This should setup the sample plug and play dashboards into kibana for filebeat. 
-
-Then we need to create a role with the required privileges and  create a new user and assign that role to the user. 
-
-role: filebeat-user-role --> 
-Cluster Privileges: monitor, read_ilm
-Index Privileges
-    indices: filebeat-*
-    privileges: create_doc,create_index
-
-User: filebeat-user
-privileges: roles
-    filebeat-user, editor
-
-Generating an API KEY for the user
-POST /_security/api_key/grant
-{
-    "grant_type": "password",
-    "username": "filebeat-user",
-    "password": "UCSC@1234",
-    "api_key": {
-        "name":"filebeat-user"
-    }
-}
-
-Get the generated API Key Details Copied We need the ID:API_KEY
-
-id:api_key
-
-Creating a KEY int the KEYSTORE where the information will be auto loaded as an environment variable. 
-
-linux command prompt> sudo /usr/share/filebeat/bin/filebeat keystore add ES_PACKETBEAT_API_KEY -c /etc/filebeat/filebeat.yml --path.home /usr/share/filebeat --path.data /var/lib/filebeat
+```bash
+cd /home/vagrant/scripts/manually-configure
+## initializing filebeat will test the config files, test the connection with elasticsearch and upload sample dashboards into kibana
+sudo  ./initialize-beats-filebeat.sh
+```
 
 ### Setting up Auditbeat in Elasticsearch Server/
-We need to make a directory under the /etc/auditbeat to hold the certificate of the certificate authority. 
+For this simple lab, I have automatically added configured auditbeat configuration files as well as the configuration files for the auditbeat modules automatically. The auditbeat will use the user - elastic to loginto elasticsearch and stream data. 
 
-linux command prompt> sudo mkdir -p /etc/auditbeat/certs/ca 
+Let's configure the auditbeat now. 
 
-Then we need to copy the ca.crt certificate from the elasticsearch certs directory and place it here. 
-
-linux command prompt> sudo cp /etc/elasticsearch/certs/ca/ca.crt /etc/auditbeat/certs/ca/ca.crt
-
-Then we need to rename the ca.crt file to ca.pem file as the beats configuration needs the certificate in .pem format
-
-linux command prompt> sudo mv /etc/auditbeat/certs/ca/ca.crt /etc/auditbeat/certs/ca/ca.pem
-
-We need to edit the filebeat.yml file sitting in /etc/auditbeat/ directory. 
-
-section:
-auditbeat.config.modules:
-    reload.enabled: true
-
-Dashboards
-setup.dashboards.enabled: true
-
-Kibana
-setup.kibana:
-    host: "https://elk-single-node:5601
-    ssl.certificate_authorities: ["/etc/auditbeat/certs/ca/ca.pem"]
-
-Elasticsearch
-output.elasticsearch:
-    hosts: ["elk-single-node:9200"]
-    ssl.certificate_authorities: ["/etc/auditbeat/certs/ca/ca.pem"]
-    protocol: "https"
-    #api_key:"${ES_AUDITBEAT_API_KEY}"
-    username: "elastic"
-    password: "changeme"
-
-We can then test the config and connection to the elasticsearch cluster
-linux command prompt> sudo /usr/share/auditbeat/bin/auditbeat test config -c /etc/auditbeat/auditbeat.yml --path.home /usr/share/auditbeat --path.data /var/lib/auditbeat
-
-linux command prompt> sudo /usr/share/auditbeat/bin/auditbeat test output -c /etc/auditbeat/auditbeat.yml --path.home /usr/share/auditbeat --path.data /var/lib/auditbeat
-
-linux command prompt> sudo /usr/share/auditbeat/bin/auditbeat setup -c /etc/auditbeat/auditbeat.yml --path.home /usr/share/auditbeat --path.data /var/lib/auditbeat
-
-This should setup the sample plug and play dashboards into kibana for auditbeat. 
-
-Then we need to create a role with the required privileges and  create a new user and assign that role to the user. 
-
-role: auditbeat-user-role --> 
-Cluster Privileges: monitor, read_ilm
-Index Privileges
-    indices: auditbeat-*
-    privileges: create_doc,create_index
-
-User: auditbeat-user
-privileges: roles
-    auditbeat-user, editor
-
-Generating an API KEY for the user
-POST /_security/api_key/grant
-{
-    "grant_type": "password",
-    "username": "auditbeat-user",
-    "password": "UCSC@1234",
-    "api_key": {
-        "name":"auditbeat-user"
-    }
-}
-
-Get the generated API Key Details Copied We need the ID:API_KEY
-
-id:api_key
-
-Creating a KEY int the KEYSTORE where the information will be auto loaded as an environment variable. 
-
-linux command prompt> sudo /usr/share/auditbeat/bin/auditbeat keystore add ES_AUDITBEAT_API_KEY -c /etc/auditbeat/auditbeat.yml --path.home /usr/share/auditbeat --path.data /var/lib/auditbeat
-
+```bash
+cd /home/vagrant/scripts/manually-configure
+## initializing auditbeat will test the config files, test the connection with elasticsearch and upload sample dashboards into kibana
+sudo  ./initialize-beats-auditbeat.sh
+```
 
 
 

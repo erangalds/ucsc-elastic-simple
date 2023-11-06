@@ -28,16 +28,5 @@ sudo cp /home/vagrant/data/metricbeat/metricbeat.yml /etc/metricbeat/
 sudo cp /home/vagrant/data/auditbeat/auditbeat.yml /etc/auditbeat/
 sudo cp /home/vagrant/data/packetbeat/packetbeat.yml /etc/packetbeat/
 
-# Convert the final Change-IP-To-Static and start services script to unix
-sed -i.bak 's/\\r$//' /home/vagrant/scripts/change-ip-to-static.sh
-sed -i.bak 's/\\r$//' /home/vagrant/scripts/start-services.sh
-sed -i.bak 's/\\r$//' /home/vagrant/scripts/setup-beats.sh
-
-#sudo dos2unix /home/vagrant/scripts/change-ip-to-static.sh
-#sudo dos2unix /home/vagrant/scripts/start-services.sh
-#sudo dos2unix /home/vagrant/scripts/start-services.sh
-
-#awk '{ sub("\\r$", ""); print }' windows_readme.txt > new_unix_readme.txt
-
-#sed -i.bak 's/\\r$//' file.txt
-
+# Copying Certificate Authority Certificate to beats config folders
+sudo cp /home/vagrant/data/elasticsearch/certs/ca/ca.crt /etc/logstash/certs/ca/ca.crt
