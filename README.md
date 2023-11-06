@@ -116,25 +116,25 @@ https://<ip address>:5601
 We should get a warning from the browser, but we can click continue / proceed. That should lead us to the kibana page. The user name is elastic and the password is the auto generated password. 
 
 > NOTE: 
-
-    If the Kibana Service doesn't come up and no log is written to the /var/log/kibana/kibana.log file. 
+>
+>    If the Kibana Service doesn't come up and no log is written to the /var/log/kibana/kibana.log file. 
     
-    ```bash
-    sudo journalctl -u kibana.service -n 75
-    ```
-
-    Then we have to un-comment one option at the node.options file. 
-
-    The below line needs to be commented
-
-    --unhandled-rejections=warn 
-
-    After that we can start the services
-
-    ```bash
-    sudo systemctl restart kibana.service
-    sudo systemctl status kibana.service
-    ```
+>   ```bash
+>    sudo journalctl -u kibana.service -n 75
+>   ```
+>
+>   Then we have to un-comment one option at the node.options file. 
+>
+>   The below line needs to be commented
+>
+>    --unhandled-rejections=warn 
+>
+>   After that we can start the services
+>
+>   ```bash
+>   sudo systemctl restart kibana.service
+>   sudo systemctl status kibana.service
+>   ```
 
 ### Setting up Metricbeat in Elasticsearch Server/
 We need to make a directory under the /etc/metricbeat to hold the certificate of the certificate authority. 
