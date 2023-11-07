@@ -44,6 +44,7 @@ Elasticsearch in the backend tries to evenly distribute the data across the prim
 
 Let us get our hands dirty now. 
 
+> ### Tips
 > #### Using Kibana Dev Tools
 > Eleasticsearch Kibana interface provides a very usefull tool for us to build and test queries. Rather than using any other tools like curl or Postman to invoke the elasticsearch apis. 
 > 
@@ -94,3 +95,55 @@ PUT my-other-index
   }
 }
 ```
+
+> ### Tips
+> The data in the shards should be evenly distributed for best performance. We have seen expert advice given to keep the shard size to 30GB - 50GB for high performing search use cases. 
+>
+
+## Inside of an Index
+As mentioned earlier, a data record which we store in an index is called ***document*** and the equivalent of this from the relational database jargon is a record in a table. The content gets indexed in elasticsearch as a JSON object. 
+
+JSON documents are complex data structures and contains ***key / value pairs***. They ***keys*** are generally strings, while ***values*** can be *nested objects, arrays, or data types such as datetime, geo_points, IP addresses* and more. 
+
+### Index Settings
+Index attributes and functional parameters can be defined using index settings. The settings can be *dynamic* as well as *static*. 
+
+### Index Mappings
+A filed in document is equivalent to a column in a relational database table. All fields in a document needs to be mapped to a data type. ***Index Mapping*** define the data types of each field. This is equivalent to a table schema definition in a relational database. The *mapping* of an *index* can be declared explicitly or generated dynamically by elasticsearch using the index data. 
+
+#### Dynamic vs Explicit Mappings
+Elasticsearch can auto generate the *mapping* for an *index* by looking at the data type of te ingested document fields. This is called a *dynamic mapping*. Once a field is mapped in a given index for a given data type that cannot be changed. Re-Indexing is the only option. 
+
+Therefore, *index mapping* can't be changed onced defined. Only option is to re-create the index and re-index documents. 
+
+> Tips
+> Its always better to define *index mappings* explicitly. That helps to the for faster indexing of documents. 
+> 
+
+Let us now try to index some documents into our previously created my-index. 
+
+Indexing with a explicit document ID. 
+
+```python
+# Index a document with _id 1
+PUT my-index/_doc/1
+{
+  "name": "Kasun",
+  "age": 40,
+  "city":"Melbourne",
+  "country":"Australia"  
+}
+
+## Index a document with _id 2
+PUT my-index/_doc/2
+{
+  "name": "Amali",
+  "age":  35,
+  "city": "Sydney",
+  "country": "Australia"
+}
+
+## Let's retrieve all the documents in the index
+GET my-index/_search
+```
+
