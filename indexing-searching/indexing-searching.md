@@ -59,7 +59,8 @@ Let us get our hands dirty now.
 
 Let's log into the Kibana Dev Tools and check for the health of our elasticsearch cluster. 
 
-```JSON
+```python
+# Querying for Elastic Cluster Health
 GET _cluster/health
 ```
 
@@ -67,7 +68,7 @@ The status - "yellow" is because we are running on a single node, and recommende
 
 Let us now create an index and get its details. We can create an index with a PUT request. 
 
-```json
+```python
 # Creating the index
 PUT my-index
 
@@ -78,13 +79,13 @@ We can see that the index named my-index was created, and the default was to hav
 
 We can get a list of all the indices in the cluster as below. 
 
-```json
+```python
 GET _cat/indices
 ```
 
 Let us know create an index with 3 primary shards and 1 replica shard. 
 
-```json
+```python
 PUT my-other-index
 {
   "settings": {
