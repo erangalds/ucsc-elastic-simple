@@ -282,30 +282,38 @@ We should be getting an error, becase we are not allowed to change the mapped da
 ### Data Types in Elasticsearch
 
 + keyword
+
 Keyword fields are string values. These will will be used for filtering documents, sorting and aggregations. Keyword fields will not be used for *full-text search*.
 
 + text
+
 Text fields are string values. These values will be *analyzed* and are used for *full-text search*.
 
 + numeric
+
 integer fields used to store numerical values. These will be mainly used for metric calculations, aggregations such as min, max and avg as well as range filters. Depending on the size of the numeric value, types such as integer, long, double and float can be used. 
 
 + date
+
 elasticsearch accepts date fields in multiple formats. 
     + a long value of milliseconds since the epoch
     + an integer value of seconds since the epoch
     + a formatted string value such as yyyy-MM-dd HH:mm:ss
 
 + ip
+
 Valid IPv4 and IPv6 values can be stored as ip fields in elasticsearch. IP ranges should be stored in as *ip_range* field in *CIDR Notation* 
 
 + boolean
+
 True or False value.
 
 + geo_point
+
 Geo location data (lattitude, longititude pairs) can be mapped as geo_point on elasticsearch. 
 
 + object
+
 This is used for complex data structures. *object* data type can be used to represent an inner object in the primary JSON document. Whenever a document field has a subfields will be mapped to type *object* by default. Objects allow you to clear. 
 
 example: 
@@ -336,6 +344,7 @@ example:
 ```
 
 + array
+
 When there is more than one value for each field, that can be stored in an array. Arrays do not need to be explicitly defined in the mapping. A field with any mapped data type can hold one or more values if required. 
 
 An array can only hold a singular data type. A field mapped as a string can only accept arrays with all string values. 
@@ -360,6 +369,7 @@ example:
 ```
 
 + nested
+
 The nested type allows you to index an array of objects, where the context of each object is preserved for querying. Standard query functions will not work in nested fields because of the internal representation of these fields. Therefore, queries that need to be run on nested fields should use the nested query syntax.
 
 when indexing a document with nested fields, each object on a nested field is indexed as a separate document in an internal data structure. Due to this, if the document has a large array of nested objects, that will cause a large number of indexing operations. 
@@ -643,5 +653,463 @@ GET stores/_search
 ```
 
 + join
+
 The join data enables us to create parent / child relationships across documents which we index. The condition is that all the related documents must exist on the shard within an index
+
+Let's look at example, of a company data set. We have employees and their respective departments. 
+
+```python
+# Below is the document mapping
+PUT department-employees
+{
+  "mappings": {
+    "properties": {
+      "dept_id": {
+        "type" : "keyword"
+      },
+      "dept_name": {
+        "type" : "keyword"
+      },
+      "employee_id" : {
+        "type" : "keyword"
+      },
+      "employee_name" : {
+        "type" : "keyword"
+      },
+      "employee_designation" : {
+        "type" : "keyword"
+      },
+      "doc_type": {
+        "type": "join",
+        "relations": {
+          "department": "employee"
+        }
+      }
+    }
+  }
+}
+
+## Let us now index some departments into the index
+
+PUT department-employees/_doc/d1
+{
+  "dept_id": "D001",
+  "dept_name": "Finance",
+  "doc_type": "department"
+}
+
+PUT department-employees/_doc/d2
+{
+  "dept_id": "D002",
+  "dept_name": "HR",
+  "doc_type": "department"
+}
+
+PUT department-employees/_doc/d3
+{
+  "dept_id": "D003",
+  "dept_name": "IT",
+  "doc_type": "department"
+}
+
+# Let us now index some employees into the index
+
+PUT department-employees/_doc/e1?routing=3
+{
+  "employee_id": "E001",
+  "employee_name": "Kasun",
+  "employee_designation": "Head Of IT",
+  "doc_type": {
+    "name": "employee",
+    "parent": "d3"
+  }
+}
+
+PUT department-employees/_doc/e2?routing=3
+{
+  "employee_id": "E002",
+  "employee_name": "Amali",
+  "employee_designation": "Manager Business Intelligence",
+  "doc_type": {
+    "name": "employee",
+    "parent": "d3"
+  }
+}
+
+PUT department-employees/_doc/e3?routing=2
+{
+  "employee_id": "E003",
+  "employee_name": "Eranga",
+  "employee_designation": "Head of HR",
+  "doc_type": {
+    "name": "employee",
+    "parent": "d2"
+  }
+}
+
+## We can use has_parent and has_child queries to run joined searches on your data.
+
+## To get a list of employees working for the IT department 
+GET department-employees/_search
+{
+  "query": {
+    "has_parent": {
+      "parent_type": "department",
+      "query": {
+        "term": {
+          "dept_name": {
+            "value": "IT"
+          }
+        }
+      }
+    }
+  }
+}
+
+# To retrieve the department which Ben works for
+GET department-employees/_search
+{
+  "query": {
+    "has_child": {
+      "type": "employee",
+      "query": {
+        "term": {
+          "employee_name": {
+            "value": "Eranga"
+          }
+        }
+      }
+    }
+  }
+}
+
+```
+## Index Templates
+An ***index template*** is a predifined schema  and settings for an index which we can reuse by applying to a common set of indices. 
+
+This is commonly used for log indexing. *Index templates* can be automatically applied to new indices based on the name of the index. 
+
+Let's look at an example:
+
+```python
+## Index Templates
+## Creating an index template for all indices starting with the firewall-logs string
+
+PUT _index_template/logs-firewall
+{
+  "index_patterns": [
+    "firewall-logs*"
+  ],
+  "template": {
+    "settings": {
+      "number_of_shards": 1
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "source.ip": {
+          "type": "ip"
+        },
+        "destination.ip": {
+          "type": "ip" 
+        },
+        "event.action": {
+          "type": "keyword"
+        },
+        "user.name": {
+          "type": "keyword"
+        },
+        "client.bytes": {
+          "type": "double"
+        }
+      }
+    }
+  }
+}
+
+
+## Now let's create a new index by indexging a new document as below
+
+POST firewall-logs-10.10.2023/_doc
+{
+ "@timestamp": "2023-10-23T01:26:26.231Z",
+ "source.ip": "10.1.10.13",
+ "destination.ip": "10.9.11.22",
+ "event.action": "deny",
+ "user.name": "kasun",
+ "client.bytes": 5
+}
+
+## The new index got created and the record / document was indexed into it. 
+## let's now look at the index
+GET firewall-logs-10.10.2023
+
+## We can get the settings only as below
+GET firewall-logs-10.10.2023/_settings
+
+## We can get the mapping only as below
+GET firewall-logs-10.10.2023/_mapping
+
+## Let us now retrieve the record we indexed
+GET firewall-logs-10.10.2023/_search
+
+```
+
+## Elasticsearch Nodes
+
+An ***elasticsearch node*** is a single running instance of elasticsearch. A single physical or virtual machine is capable of hosting either one or multiple instances of elasticsearch. 
+
+There are different types of node roles. 
+
++ Master eligible Nodes
+
+At a given point, a single node is selected to be the *active master* from the master eligible node pool. The master node is responsible for
+    + keeping track of other nodes in the cluster
+    + creates or deletes indices
+    + distributing shards based on requirements / constraints
+    + maintaining cluster settings
+
+As a best practice it is imporant to have more than one master eligible node to handle master node failures. The minimum number of master nodes required for a cluster is 3. If we have 2 then we have a problem which we call as *split brain* problem. 
+
++ Data Nodes
+
+These are the nodes which keep the actual data / shards. The primary task of a *data node* is responding to read / write requests. 
+
+When we design enterprise grade *elasticsearch clusters* which include several *data nodes* we use *storage tiering* to categorize the *data nodes*. This is done, mainly to improve the performance as well as to keep the infrastructure cost down. 
+
+    + HOT Nodes (data hot)
+        + continually written to
+        + large volumes of data ingested per second
+        + used for real-time use cases
+        + generally use fast SSD / NVMe disks to improve throughput
+    + WARM Nodes (data warm)
+        + data doesn't get updated
+        + used for data retention for long time periods with search / analytics requirements
+        + yet data can be interactivelly queried
+        + uses higher density slower cheaper disks. 
+    + COLD Nodes (cold data)
+        + utilize slower magnetic or network attached disks. 
+        + used to store infrequently accesssed data
+        + data retained for longer retenso for compliance audit requirements
+
++ Ingest Nodes
+
+Used to process ***ingest pipelines*** associated with an indexing request. *Ingest pipelines* are used to transform incoming document data before getting indexed. 
+
++ Coordinator Nodes
+
+***Coordinator nodes*** routes saerch / indexing requests to the appropriate data node. Additionally they combine search results from multiple shards before returning the final result to the client. 
+
++ Machine Learning Nodes
+
+Elasticsearch supports running machine learning jobs on top of real time data feeds. Machine learning nodes process the machine learning jobs and related API requests. 
+
++ Elasticsearch Clusters
+
+A group of elasticsearch nodes put together is an elasticsearch cluster. 
+
+
+## Searching for Data in Elasticsearch
+
+Let us now look at a real world example of indexing some data and trying to search for data for analysis purpose. 
+
+Run the below script to get the data loaded into your elasticsearch cluster. 
+
+```bash
+# Look at the current working directory
+pwd
+# Change your working directory to below path
+cd /home/vagrant/web-logs
+# Let's look at the execute permission of the script
+ls -l
+# We should have permissions as below
+# -rwxrw-r-- 1 vagrant vagrant     210 Nov  7 04:17 ingest-web-log-data.sh
+# -rwxrwxr-x 1 vagrant vagrant     781 Nov  6 12:22 setup-index-template-ingest-pipeline.sh
+# If not run the below chmod command to add execution permission
+# chmod u+x ingest-web-log-data.sh
+# chmod u+x setup-index-template-ingest-pipeline.sh
+#
+# Then run the setup script first
+# This will setup the required index and the mapping for the index
+#
+sudo ./setup-index-template-ingest-pipeline.sh
+# Next let's run the script to load / index the web log data
+sudo ./ingest-web-log-data.sh
+```
+
+### Querying Data
+
+#### Use Case 1 - Find all the HTTP events with an HTTP response code of 200 (Which is the status OK)
+
+```python
+GET web-logs/_search
+{
+  "query": {
+    "term": {
+      "http.response.status_code": {
+        "value": "200"
+      }
+    }
+  }
+}
+```
+
+#### Use Case 2 - Find all HTTP events where the request method was of POST type and resulted in a non - 200 response code (basically errors for POST requests)
+
+```python
+GET web-logs/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "http.request.method": {
+              "value": "POST"
+            }
+          }
+        }
+      ],
+      "must_not": [
+        {
+          "term": {
+            "http.response.status_code": {
+              "value": "200"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+```
+
+#### Use Case 3 - Find all HTTP events referencing the terms refrigerator and windows anywhere in the document
+
+```python
+GET web-logs/_search
+{
+  "query": {
+    "match": {
+      "event.original": {
+        "query": "refrigerator windows",
+        "operator": "and"
+      }
+    }
+  }
+}
+
+```
+
+#### Use Case 4 - Look for all requests where users on Windows machines were looking at refrigerator related pages on the website.
+
+```python
+GET web-logs/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "match": {
+            "url.original.text": "refrigerator"
+          }
+        },
+        {
+          "match": {
+            "user_agent.os.full.text": "windows"
+          }
+        }
+      ]
+    }
+  }
+}
+
+```
+#### Use Case 5 - Look for all events originating from either South Africa, Ireland or Hong Kong
+
+```python
+GET web-logs/_search
+{
+  "query": {
+    "terms": {
+      "source.geo.country_name": [
+        "South Africa",
+        "Ireland",
+        "Hong Kong"
+      ]
+    }
+  }
+}
+```
+
+#### Use Case 6 - Find all the events originating from IP addresses belonging to the Pars Online PJS and Respina Networks & Beyond PJSC telecommunication providers
+
+```python
+## First we need to create a new index to keep the terms which we are going to search
+
+PUT telcos-list
+{
+  "mappings": {
+    "properties": {
+      "name": {
+        "type": "keyword"
+      }
+    }
+  }
+}
+
+## index a document containing the list of terms to be searched
+PUT telcos-list/_doc/1
+{
+  "name": [
+    "Pars Online PJS",
+    "Respina Networks & Beyond PJSC"
+  ]
+}
+
+GET web-logs/_search
+{
+  "query": {
+    "terms": {
+      "source.as.organization.name": {
+        "index": "telcos-list",
+        "id": "1",
+        "path": "name"
+      }
+    }
+  }
+}
+```
+
+#### Use Case 7 - Find all HTTP GET events with response bodies of more than 100,000 bytes
+
+```python
+GET web-logs/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "term": {
+            "http.request.method": {
+              "value": "GET"
+            }
+          }
+        },
+        {
+          "range": {
+            "http.response.body.bytes": {
+              "gte": 10000
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+```
 
