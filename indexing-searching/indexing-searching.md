@@ -28,7 +28,7 @@ The number of primary shards and replica shards can be configured. The primary s
 
 The number of replica shards can be changed dynamically to improve the read performance and hence it supports increasing and decreasing the replica shard count. But changing replica shards has a huge compute power and storage space impact, therefore careful thought needs to be given before doing that. 
 
-```json
+```python
 PUT /test-index
 {
     "settings": {
