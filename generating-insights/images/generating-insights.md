@@ -1,0 +1,141 @@
+# Generating Insights
+
+## Aggregation Queries in Elasticsearch
+Sometimes, looking for terms or phrases is not enough. We might have to count, find the min, max values or averages, medians of metrics or certain scenarios. That's where we need the aggregation functions of elasticsearch. 
+
+Aggregations play a key role in many use case, such as Data visualization and dashboards, supervised and unsupervised machine learning jobs or even in very special cases like creating special indices with summarized data for long term retention for analytics. 
+
+Let's look at an example. 
+
+### Example 1: Search for all the logs that were created within the given period:
+
+```python
+# size=0 - we are asking elasticsearch not to return any individual documents, but only the count of documents which match the search criteria
+GET web-logs/_search?size=0
+{
+ "query": {
+    "range": {
+     "@timestamp": {
+        "gte": "2023-10-23T00:00:00.000Z",
+        "lt": "2023-10-24T00:00:00.000Z"
+     }
+    }
+ }
+}
+```
+The total number of log entries for that date range is 4654
+
+### Example 2: Calculate a metric representing the number of bytes that are served by the web servers in the given period. 
+
+The search request includes a query and an aggregation component. The query component defines the subset of documents to be returned, while the aggregation component defines the aggregations to be performed on the result. 
+
+```python
+# query where we try to find documents between a data range using range option
+# we are aggregating the total bytes in responses using sum
+
+GET web-logs/_search?size=0
+{
+ 
+ "query": {
+   "range": {
+   "@timestamp": {
+     "gte": "2023-10-23T00:00:00.000Z",
+     "lt": "2023-10-24T00:00:00.000Z"
+    }
+   }
+ },
+ "aggs": {
+ "bytes_served": {
+   "sum": {
+   "field": "http.response.body.bytes"
+   }
+  }
+ }
+}
+
+```
+We can see that the total *bytes_served* from the web server is 58785836 bytes. 
+
+### Example 3 - Let's get the total response bytes data as hourly chunks for better granularity. 
+
+Aggregations can be nested within a parent aggregation to achieve this outcome.
+
+```python
+# Here we are nesting an aggregation within an aggregation
+# Within the outer aggregation we have included the definition for the buckets, here its hours
+
+GET web-logs/_search?size=0
+{
+ "query": {
+   "range": {
+     "@timestamp": {
+       "gte": "2023-10-23T00:00:00.000Z",
+       "lt": "2023-10-24T00:00:00.000Z"
+     }
+   }
+ },
+ "aggs": {
+   "hourly": {
+     "date_histogram": {
+       "field": "@timestamp",
+       "fixed_interval": "1h"
+     },
+     "aggs": {
+       "bytes_service": {
+         "sum": {
+           "field": "http.response.body.bytes"
+         }
+       }
+     }
+   }
+ }
+}
+```
+
+We can see that from mid night 12am to 1 am *bytes_served* 540768 bytes. Then from 1am to 2am its 436382 bytes etc. 
+
+Some observations of the data. 
+	a. The least amount of traffic was served at 12:00
+		a. Is this reflected on other days as well?
+		b. Is it possible that the time zone on the data needs adjusting? 
+		
+	b. Most traffic was served at 19:00 which was about 10x more than the least busy hour
+
+Let's drill down even further. 
+
+### Do we see the same pattern on all days
+
+Increase the time period to 2 days to confirm patterns of seasonality in our data. Let's also return the number of Kilobytes (KB) to make the metric easier to understand. 
+
+```python
+GET web-logs/_search?size=0
+{
+ "query": {
+   "range": {
+     "@timestamp": {
+       "gte": "2023-10-23T00:00:00.000Z",
+       "lt": "2023-10-25T00:00:00.000Z"
+     }
+   }
+ },
+ "aggs": {
+   "hourly": {
+     "date_histogram": {
+       "field": "@timestamp",
+       "fixed_interval": "1h"
+     },
+     "aggs": {
+       "bytes_service": {
+         "sum": {
+           "field": "http.response.body.bytes",
+           "script": {
+             "source": "_value/(1024)"
+           }
+         }
+       }
+     }
+   }
+ }
+}
+
+```
