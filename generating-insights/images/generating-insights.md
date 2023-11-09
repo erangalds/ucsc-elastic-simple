@@ -103,7 +103,7 @@ Some observations of the data.
 
 Let's drill down even further. 
 
-### Do we see the same pattern on all days
+### Example 4 - Do we see the same pattern on all days
 
 Increase the time period to 2 days to confirm patterns of seasonality in our data. Let's also return the number of Kilobytes (KB) to make the metric easier to understand. 
 
@@ -139,3 +139,105 @@ GET web-logs/_search?size=0
 }
 
 ```
+
+The following are some additional observations we can make: 
+	• The traffic does seem to be cyclical every 24 hours as a similar sinusoidal pattern can be observed on both days. 
+	• On both days, the average traffic during the low period was around 400-450 KB.
+
+### Example 5 - Let's dig more deeply into the Type of Device for the requests
+
+```python
+GET web-logs/_search?size=0
+{
+ "query": {
+     "range": {
+     "@timestamp": {
+         "gte": "2023-10-23T00:00:00.000Z",
+         "lt": "2023-10-25T00:00:00.000Z"
+       }
+     }
+ },
+ "aggs": {
+   "hourly": {
+     "date_histogram": {
+       "field": "@timestamp",
+       "fixed_interval": "1h"
+     },
+     "aggs": {
+       "user_agents" : {
+         "terms": {
+           "field": "user_agent.name",
+           "size": 5
+         },
+         "aggs": {
+           "bytes_served": {
+             "sum": {
+               "field": "http.response.body.bytes",
+               "script": "_value/(1024)"
+             }
+           }
+         }
+       }
+     }
+   }
+ }
+}
+
+```
+
+Bucket aggregations can contain sub-aggregations (that can, in turn, be either metric or bucket aggregations) to further slice and dice the dataset you're analyzing. 
+
+## Using Kibana Visualization to get the same insights
+
+Kibana is the visualization solution in the elasticsearch solution stack. Kibana has very good data visualization capabilities. Let us now look at how we can use Kibana to visualize the data. 
+
+### Step 1 - Setting up a Kibana Data View for the Web-logs index
+
+Before we can create any visualizations first thing we need to do is to create a Kibana Data View. That we can do as below. 
+
+* Select ***Stack Management*** option from the ***Main Kibana Menu*** 
+
+![Select Stack Management from Main Kibana Menu](/generating-insights/images/creating-a-data-view-select-stack-management.png)
+
+* Select ***Data View*** option from the ***Kibana Stack Management Menu***
+
+![Select Data View from Kibana Stack Management Menu](/generating-insights/images/creating-a-data-view-select-data-view.png)
+
+* Create a New Data View
+
+![Create a New Data View with the Web-logs Index Data](/generating-insights/images/create-a-data-view-with-a-select-index-pattern.png)
+
+* Data View created
+
+![Data view gets created](/generating-insights/images/data-view-created-for-web-logs-data.png)
+
+### Step 2 - Creating a Dashboard
+
+Once the data view is created, then we can use that data view to create a dashboard. A single dashboard can have multiple visualizations. 
+
+* Select ***Dashboard*** option from ***Kibana Main Menu***
+
+Selec the Dashboard option from the main Kibana Menu and then select ***Create Visualization*** option. 
+
+![Select Dashboard option from the main Kibana menu](/generating-insights/images/creating-a-dashboard-select-dashboard.png)
+
+* Select web-logs index as the data view and last 3 months as the time frame
+
+![Select web-logs index as the data view and last 3 months as the time frame](/generating-insights/images/select-web-logs-index-pattern-last-3-months.png)
+
+* Creat the hourly breakdown of Sum of http.response.bytes Chart
+
+![Create the hourly breakdown of Sum of http.response.bytes Chart](/generating-insights/images/23rd-response-body-bytes-sum-by-hour.png)
+
+* Save the Dashboard with a name with the first visualization
+
+![Save the Dashboard with a name with the first visualization](/generating-insights/images/save-dashboard-with-a-dashboard-name.png)
+
+* Creat the hourly breakdown of the sum of http.response.bytes Chart with User_Agent Legend
+
+![Creat the hourly breakdown of the sum of http.response.bytes Chart with User_Agent Legend](/generating-insights/images/response-body-bytes-sum-by-user-agent-23rd-26th-oct.png)
+
+* You can add more visualizations following the same steps. 
+
+![Final Dashboard](/generating-insights/images/Final%20Dashboard.png)
+
