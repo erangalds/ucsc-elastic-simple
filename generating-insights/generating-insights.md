@@ -464,3 +464,85 @@ POST logs-datastream-web-server/_doc
 
 ## Data Transformation using Ingest Pipelines
 
+Elasticsearch is designed to operate as a ***schema on read*** datase / datastore. Which means once a document is indexed, the field names and values that have been indexed cannot be changed. The only way out is to re-index the document. Therefore, we have to make sure that we always *parse, transform and clean* the documents before ingestion. 
+
+There is a feature called *runtime fields* in elasticsearch. But *runtime fields* are used to manipulate and transform fields during a search. But using *runtime fields* is a very resouce costly and time consuming if the data volume is huge. 
+
+***Ingest Pipelines*** is a light weight utility available for data transformation before a document getting indexed. elasticsearch has a separate solution for data ETL called ***logstash*** and that solution offers more superior functionality than *ingest pipelines*. But still for most of the use cases using *ingest pipelines* would be easier than getting them parsed through *logstash*. 
+
+Let's see how we can use *ingest pipelines*
+
+```python
+## Creating an ingest pipeline
+PUT _ingest/pipeline/logs-add-tag
+{
+  "description": "Adds a static tag for the environment the log originates from",
+  "processors": [
+    {
+      "set": {
+        "field": "environment",
+        "value": "production"
+      }
+    }
+  ]
+}
+
+## We can now test the ingest pipeline by running some test documents through it
+POST _ingest/pipeline/logs-add-tag/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "host.os": "macOS",
+        "source.ip": "10.22.11.89"
+      }
+    }
+  ]
+}
+
+## Documents can be processed using ingest pipelines in the following ways:
+# First Method : Specifying the ingest pipeline as part of an indexing request
+POST log-index/_doc?pipeline=logs-add-tag
+{
+ "host.os": "windows 10",
+ "source.ip": "113.121.143.90"
+}
+
+## Second Method : Bluk Request with pipeline parameter setup
+POST _bulk
+{ "index" : { "_index" : "log-index", "_id" : "1","pipeline": "logs-add-tag" } }
+{ "host.os" : "windows 7", "source.ip" : "10.0.0.1" }
+{ "index" : { "_index" : "log-index", "_id" : "2","pipeline": "logs-add-tag" } }
+{ "host.os" : "macOS", "source.ip" : "10.0.0.2" }
+{ "index" : { "_index" : "log-index", "_id" : "3","pipeline": "logs-add-tag" } }
+{ "host.os" : "linux", "source.ip" : "10.0.0.3" }
+
+## Let's see what has been indexed
+GET log-index/_search 
+
+#Additionally we can set the default ingest pipeline in the index setting. 
+
+PUT log-index/_settings
+{
+  "index.default_pipeline" : "logs-add-tag"
+}
+
+# NOTE : That we can also set the same setting in the index template as well. 
+
+# Once we set the default_pipeline parameter in the index. We can index documents without specifying the pipeline. 
+
+POST log-index/_doc
+{
+  "host.os": "Windows 11",
+  "source.ip": "10.0.0.5"
+}
+
+## Save the auto generated document ID 
+## We can retrieve the document using the _id
+# We can see that the pipeline has been applied
+
+GET log-index/_search 
+
+GET log-index/_doc/Nr5xtIsBkoqDm2csLPQb
+
+```
