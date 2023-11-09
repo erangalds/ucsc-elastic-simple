@@ -241,3 +241,226 @@ Selec the Dashboard option from the main Kibana Menu and then select ***Create V
 
 ![Final Dashboard](/generating-insights/images/Final%20Dashboard.png)
 
+
+## Looking into Index Life Cycle Management
+
+Most of the machine generated data captured by reading log files, doesn't change once indexed. Here a *machine* is referred to any *IT equipments like, servers, storage arrays, network devices like switches, routers, firewalls, databases, applications or even IoT devices like sensors, actuators, smart motors, smart home appliances etc*. When indexing the data captured from these all the documents have a timestamp to capture the event occurring time, data ingested time etc, therefore these type of data are ideal candidates for *Index Life Cycle Management* policies. 
+
+Below figure explains the general usefulness of the data over time. 
+
+![usefulness of data over time](/generating-insights/images/usefulness-of-data-over-time.png)
+
+As the number of machines increase, the data volumes can quickly increase. Eventually it will be expensive to ingest and retain all of the data in the same high performing disks. Therefore as the data reaches a certain age, we can slowly move the data into more cheaper storage devices. 
+
+Typically this is what we called as Data Nodes configured to run in Tiered Storage Architecture. 
+
+* Hot
+    - High performing SSD disks
+    - Lower number of shards per GB heap
+    - Sufficient CPU resources to support high throughput writes/reads
+* Warm
+    - Larger disks that allow for more storage for cost per unit cost
+    - Shard density is higher than hot nodes
+    - Sufficient  CPU resources to support a reasonable read / write throughput
+* Cold
+    - Much larger / cheaper disks (with potentially lower disk throughput)
+    - Much higher shard density compared to hot nodes
+    - Data is no londer replicated
+    - Cheaper instance types with lower CPU resources
+* Frozen
+    - Data is no longer kept on data nodes. 
+    - Cheap external storage such as object stores used to store data
+    - Much slower search response
+    - Can support cheap long term storage of data
+
+
+### Index Lifecycle Management
+
+Index Lifecycle Management (ILM) policies can be configured to define the various phases within the life cycle of an index (such as hot, warm, cold, delete, and so on) and the actions to be performed as data transitions through the phases.
+
+Below are basic concepts of ILM:
+
+* *Bootstrap Index* 
+    - *bootstrap index* - is the initial index that needs to be created. This needs to be created manually. ***Data Stream*** based indices don't need a *bootstrap* index. 
+    - *Write Alias* - ILM means that we will end up with many different indices with a similar naming pattern. But the actual agents who are sending the data doesn't know whats the latest active index is. That's where the *Write Alias* comes in. *Write Alias* will act as a transparent way to interact with the current active index. 
+    - *Index Rollover* - *Index Rollover* is where we create a new index and change the *write alias* to the new index. So we stop writing new data to the previous index, and we make the previous index *read-only*. *Rollover* will happen when the defined *rollover conditions* are met. *Rollover conditions* are conditions like, *maximum index size, maximum number of documents, or maximum number of index age* etc. 
+
+Below figure explains the ILM concepts. 
+
+![ILM Concepts](/generating-insights/images/ilm-index-rollover.png)
+
+Let's get our hands dirty again with ILM Policies
+
+```python
+## Creating an index lifecycle policy
+
+PUT _ilm/policy/logs-policy
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "1d",
+        "actions": {
+          "rollover": {
+            "max_age": "30d",
+            "max_size": "50gb"
+          }
+        }
+      },
+      "warm": {
+        "min_age": "1d",
+        "actions": {
+          
+        }
+      },
+      "delete": {
+        "min_age": "10d",
+        "actions": {
+          
+        }
+      }
+    }
+  }
+}
+
+## Define and Index template for the data source that references the ILM policy we created previously
+
+PUT _index_template/web-logs
+{
+  "index_patterns": ["ilm-web-logs"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "logs-policy",
+      "index.lifecycle.rollover_alias" : "ilm-web-logs"
+    }
+  }
+}
+
+## Create a boostrap index for the data source and start writing data
+PUT ilm-web-logs-000001
+{
+  "aliases": {
+    "ilm-web-logs": {
+      "is_write_index": true
+    }
+  }
+}
+
+## Indexing a document
+POST ilm-web-logs/_doc
+{
+ "timestamp": "2023-10-24T03:00:00.000Z",
+ "log": "server is up"
+}
+
+POST ilm-web-logs/_doc
+{
+ "timestamp": "2023-10-24T04:00:00.000Z",
+ "log": "server is up"
+}
+
+POST ilm-web-logs/_doc
+{
+ "timestamp": "2023-10-24T05:00:00.000Z",
+ "log": "server is up"
+}
+## let's look at the index
+GET ilm-web-logs/_search
+
+```
+
+An index can be rolled over manually if needed, even if the rollover conditions that have been defined in the ILM policy haven't been met. One instance when this can be useful is when the index template/mapping for a data source needs to be updated. Roll over the index as follows
+
+```python
+## Rolling Over an index manually
+POST ilm-web-logs/_rollover
+
+# Let's index more documents
+POST ilm-web-logs/_doc
+{
+ "timestamp": "2023-10-24T06:00:00.000Z",
+ "log": "server is down"
+}
+
+POST ilm-web-logs/_doc
+{
+ "timestamp": "2023-10-24T07:00:00.000Z",
+ "log": "server is down"
+}
+
+POST ilm-web-logs/_doc
+{
+ "timestamp": "2023-10-24T08:00:00.000Z",
+ "log": "server is up"
+}
+
+# View all the indices for ilm-web-logs by running the following command: 
+# View all the indices for ilm-web-logs
+GET _cat/indices/ilm-web-logs*?v
+
+# All the indices can be searched as follows
+GET ilm-web-logs/_search 
+# You can use the * as a wildcard character as well. 
+GET ilm-web-logs*/_search 
+
+
+```
+
+## Data Streams
+
+Managing the time-series data is very easy with the ILM policies. But one drawback is having to create the *bootstrap index". Elasticsearch has come with a even better solution which they call as ***data streams***. *Data Streams* are built on top of ILM features. They automatically create the ILM related components. *Data Streams* also provides a single / uniform resource name to help write and consume data and hide the complexity of underlying elasticsearch indices from the consumer. 
+
+We need two things to setup a *data stream*
+- ILM Policy
+- Index Template with Data Streams enabled. The *index pattern* in the template should match the name of the *data stream* to be created
+
+Let's now see this in action
+
+```python
+## Creating a new Index Template with Data Streams enabled
+PUT /_index_template/logs-datastream
+{
+  "priority": 200,
+  "index_patterns": ["logs-datastream*"],
+  "data_stream": {
+    
+  },
+  "template": {
+    "settings": {
+      "index.lifecycle.name": "logs-policy"
+    }
+  }
+}
+
+## Creating the data stream
+PUT /_data_stream/logs-datastream-web-server
+
+## Looking at the backing indices
+GET _data_stream/logs-datastream-web-server
+
+
+## Indexing a document
+POST logs-datastream-web-server/_doc
+{
+ "timestamp": "2023-10-24T03:00:00.000Z",
+ "log": "server is up"
+}
+
+POST logs-datastream-web-server/_doc
+{
+ "timestamp": "2023-10-24T04:00:00.000Z",
+ "log": "server is up"
+}
+
+POST logs-datastream-web-server/_doc
+{
+ "timestamp": "2023-10-24T05:00:00.000Z",
+ "log": "server is up"
+}
+
+```
+
+## Data Transformation using Ingest Pipelines
+
