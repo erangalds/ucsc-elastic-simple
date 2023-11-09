@@ -546,3 +546,374 @@ GET log-index/_search
 GET log-index/_doc/Nr5xtIsBkoqDm2csLPQb
 
 ```
+### Common Use Cases of Ingest Pipelines
+
+#### Example 1 - Parsing log messages and extracting useful fields of information
+
+Example Log File Messages as below: 
+
+"10:12:05 HTTP Monitor production is in GREEN state" 
+"10:12:05 HTTP Monitor production is in RED state"
+
+```python
+
+## Creating the new ingest pipeline
+PUT _ingest/pipeline/logs-extract-fields
+{
+  "description": "Extracts important fields from the log message and ingest them as new fields while removing the original log message",
+  "processors": [
+    {
+      "dissect": {
+        "field": "message",
+        "pattern": "%{time} %{monitor.name} Monitor %{monitor.environment} is in %{monitor.state} state"
+      }
+    },
+    {
+      "lowercase": {
+        "field": "monitor.state"
+      }
+    },
+    {
+      "remove": {
+        "field": "message"
+      }
+    }
+  ]
+}
+
+## Simulating the pipeline
+POST _ingest/pipeline/logs-extract-fields/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "message": "10:12:05 HTTP Monitor production is in GREEN state"
+      }
+    },
+    {
+      "_source": {
+        "message": "10:13:05 MySQL Monitor production is in RED state"
+      }
+    }
+  ]
+}
+
+```
+
+### Example 2 - Tagging a document based on the field values in the document
+
+```python
+## Creating the new ingest pipeline
+PUT _ingest/pipeline/log-tag-message
+{
+  "description": "Using a script to check the values of the classification and subnet fields. Then if the values match a certain criteria document is tagged as protected",
+  "processors": [
+    {
+      "set": {
+        "if": "ctx.classification=='secret' && ctx.subnet=='CTS-01'", 
+        "field": "tag",
+        "value": "protected"
+      }
+    }
+  ]
+}
+
+## Simulating the pipeline
+POST _ingest/pipeline/log-tag-message/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "environment": "production",
+        "subnet": "CTS-01",
+        "classification": "secret"
+      }
+    },
+    {
+      "_source": {
+        "environment": "production",
+        "subnet": "ATT-01",
+        "classification": "unclassified"
+      }
+    }
+  ]
+}
+
+```
+
+### Example 3 - Dropping undesired log events (based on field values) so that they aren't ingested into the index
+
+```python
+
+## Creating the new ingest pipeline
+PUT _ingest/pipeline/log-tag-message
+{
+  "description": "Using a script to check the values of the classification and subnet fields. Then if the values match a certain criteria document is tagged as protected",
+  "processors": [
+    {
+      "script": {
+        "source": """
+          def disallowedCodes = ["AS-29", "BA-23", "BA-24"];
+          if (disallowedCodes.contains(ctx.event_code)){
+            ctx.tag = "drop";
+          }
+        """
+      }
+    },
+    {
+      "drop": {
+        "if": "ctx.tag == 'drop'"
+      }  
+    }
+  ]
+}
+
+## Simulating the pipeline
+POST _ingest/pipeline/log-tag-message/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "environment": "production",
+        "subnet": "CTS-01",
+        "event_code": "AS-32"
+      }
+    },
+    {
+      "_source": {
+        "environment": "production",
+        "subnet": "ATT-01",
+        "event_code": "AS-29"
+      }
+    }
+  ]
+}
+
+```
+
+There is another way to simulate a pipleline without creating a separate new pipleline in elastic.Instead we can give the definition of the pipeline in teh simulate request itself with the sample docs. 
+
+```python
+POST _ingest/pipeline/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "environment": "production",
+        "subnet": "CTS-01",
+        "event_code": "AS-32"
+      }
+    },
+    {
+      "_source": {
+        "environment": "production",
+        "subnet": "ATT-01",
+        "event_code": "AS-29"
+      }
+    }
+    ],
+  "pipeline": {
+    "processors": [
+      {
+        "script": {
+          "source": """
+          def disallowedCodes = ["AS-29", "BA-23", "BA-24"];
+          if (disallowedCodes.contains(ctx.event_code)){
+            ctx.tag = "drop";
+          }
+          """
+        }
+      },
+      {
+        "drop": {
+          "if": "ctx.tag == 'drop'"
+        }
+      }
+    ]
+  }
+}
+
+```
+
+### Example 4 - Routing and Indexing documents to the right Elasticsearch Index based on the field values in the document
+
+```python
+## Creating the new ingest pipeline
+PUT _ingest/pipeline/index-router
+{
+  "description": "This pipeline will set the index name looking at the field values",
+  "processors": [
+    {
+      "set": {
+        "field": "_index",
+        "value": "{{application}}-{{environment}}"
+      }      
+    }
+  ]
+}
+
+## Simulating the pipeline
+POST _ingest/pipeline/index-router/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "environment": "production",
+        "application": "apache"
+      }
+    },
+    {
+      "_source": {
+        "environment": "dev",
+        "application": "apache"
+      }
+    }
+  ]
+}
+
+
+```
+
+### Example 5 - Strip sensitive information (such as payment card information) from the fields in documents
+
+```python
+
+## Creating the new ingest pipeline
+PUT _ingest/pipeline/data-masking
+{
+  "description": "This pipeline will strip sensitive information and replace them with masked characters before ingestion",
+  "processors": [
+    {
+      "gsub": {
+        "field": "message",
+        "pattern": "\\b(?:3[47]\\d|(?:4\\d|5[1-5]|65)\\d{2}|6011)\\d{12}\\b",
+        "replacement": "xxxx-xxxx-xxxx-xxxx"
+      }      
+    }
+  ]
+}
+
+## Simulating the pipeline
+POST _ingest/pipeline/data-masking/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "message": "Customer A1121 paid with 5555555555554444"
+      }
+    },
+    {
+      "_source": {
+        "message": "Customer A1122 paid with 378282246310005"
+      }
+    }
+  ]
+}
+
+```
+
+### Example 6 - Enrich documents based on the field values in the document and an enrichment index containing additional data
+
+First let us create a separate index to hold the sensor data to be used for enrichment.
+
+```python
+PUT sensors
+{
+  "mappings": {
+    "properties": {
+      "sensor.id": {
+        "type": "keyword"
+      },
+      "sensor.type":{
+        "type": "keyword"
+      },
+      "sensor.location":{
+        "type": "geo_point"
+      }
+    }
+  }
+}
+
+## Now let's add some Sensor Data
+POST sensors/_doc/
+{
+ "sensor.id": "ANZ3431",
+ "sensor.type": "humidity",
+ "sensor.location": "-37.938009, 144.923652"
+}
+
+POST sensors/_doc/
+{
+ "sensor.id": "ANZ3231",
+ "sensor.type": "temperature",
+ "sensor.location": "-35.409301, 131.196086"
+}
+
+```
+
+The ingest pipeline will use an Enrich policy to perform enrichment. The Enrich policy holds the configuration for what kind of source fields in the event should be matched in the enrichment index, plus the additional fields to be added to the event.
+
+```python
+## Creating an enrichment policy
+PUT _enrich/policy/sensors-lookup
+{
+  "match": {
+    "indices": "sensors",
+    "match_field": "sensor.id",
+    "enrich_fields": ["sensor.type","sensor.location"]
+  }
+}
+
+```
+
+Once the Enrich policy has been created, run the following command to execute the policy. The execution step builds an internal Elasticsearch index that's been optimized for lookups that will be used by the enrichment policy. Changes to the source enrichment index will only take effect once the Enrich policy has been executed:
+
+```python
+## Now let's execute the enrichment policy. 
+## Executing the policy will setup a new internal elasticsearch index which is optimized for lookups
+POST _enrich/policy/sensors-lookup/_execute
+
+## Now let's create the pipeline and simulate it
+
+## Creating the new ingest pipeline
+PUT _ingest/pipeline/data-enrichment
+{
+  "description": "This pipeline will enrich the document data with additional data by looking up from another index",
+  "processors": [
+    {
+      "enrich": {
+        "policy_name": "sensors-lookup",
+        "field": "sensor.id",
+        "target_field": "sensor"
+      }      
+    }
+  ]
+}
+
+## Simulating the pipeline
+POST _ingest/pipeline/data-enrichment/_simulate
+{
+  "docs": [
+    {
+      "_source": {
+        "@timestamp": "2023-10-23T00:00:00.000Z",
+        "sensor": {
+            "id": "ANZ3431",
+            "reading": "120"
+        }
+      }
+    },
+    {  
+      "_source": {
+        "@timestamp": "2023-10-23T00:00:00.000Z",
+        "sensor": {
+            "id": "AMR1211",
+            "reading": "110"
+        }
+      }
+    }
+  ]
+}
+
+```
+
