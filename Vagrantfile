@@ -32,6 +32,7 @@ Vagrant.configure("2") do |config|
   # Invoking the Copy Files and File Permission Change Scripts
   config.vm.provision "shell", path: "scripts/copy-files.sh"
   config.vm.provision "shell", path: "scripts/change-file-ownership.sh"
+  
 
   # Below configuration is not needed for VirtualBoX Hypervisor. Its needed only if you are using Hyper-V as the Hypervisor
   # Changing the IP to a static IP
