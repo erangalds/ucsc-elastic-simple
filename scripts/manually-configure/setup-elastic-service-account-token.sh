@@ -11,7 +11,7 @@ sudo chmod 660 /etc/elasticsearch/service_tokens
 sudo chown vagrant:vagrant /home/vagrant/elastic-service-token
 
 file_content=$(cat /home/vagrant/elastic-service-token)
-token=$(echo file_content | awk '{print $4}')
+token=$(echo $file_content | awk '{print $4}')
 
 sudo /usr/share/kibana/bin/kibana-keystore remove elasticsearch.serviceAccountToken
 echo -e $token | sudo /usr/share/kibana/bin/kibana-keystore add elasticsearch.serviceAccountToken

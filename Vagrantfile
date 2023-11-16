@@ -32,8 +32,10 @@ Vagrant.configure("2") do |config|
   # Invoking the Copy Files and File Permission Change Scripts
   config.vm.provision "shell", path: "scripts/copy-files.sh"
   config.vm.provision "shell", path: "scripts/change-file-ownership.sh"
-  
-
+  config.vm.provision "shell", path: "scripts/manually-configure/full-setup.sh"
+  #config.vm.provision "shell", path: "scripts/manually-configure/setup-elastic-service-account-token.sh"
+  #config.vm.provision "shell", path: "scripts/manually-configure/start-elasticsearch-kibana-services.sh"
+  #config.vm.provision "shell", path: "scripts/manually-configure/change-elastic-user-password.sh"
   # Below configuration is not needed for VirtualBoX Hypervisor. Its needed only if you are using Hyper-V as the Hypervisor
   # Changing the IP to a static IP
   # If Hyper-V Default Swtich type is used, then its better to run this command manually each time you start the VM
