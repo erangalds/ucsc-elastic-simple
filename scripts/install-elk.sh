@@ -1,7 +1,9 @@
 #!/bin/bash
 # Installing required common software
 sudo apt update
-sudo apt install wget vim dos2unix
+sudo apt install wget -y
+sudo apt install vim -y
+sudo apt install dos2unix -y
 # Importing the PGP Key of the Elastic Binaries
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
 # Install Required Pluggins

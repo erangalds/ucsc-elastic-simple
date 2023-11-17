@@ -40,3 +40,6 @@ chmod u+x /home/vagrant/web-logs/*.sh
 
 chmod u+x /home/vagrant/scripts/manually-configure/*.sh
 
+dos2unix /home/vagrant/scripts/*.sh
+dos2unix /home/vagrant/scripts/manually-configure/*.sh
+
