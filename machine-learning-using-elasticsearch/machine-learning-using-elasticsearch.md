@@ -45,7 +45,7 @@ Then we need to create a new Data View using the Webapp Index pattern.
 
 The created webapp data view. 
 
-![Setting up a Data View using the Web App Index](/machine-learning-using-elasticsearch/images/03-create-data-view-webapp-data.png)
+![Setting up a Data View using the Web App Index](/machine-learning-using-elasticsearch/images/03-created-data-view-webapp-data.png)
 
 Let's go the Discover App and check for data. 
 
@@ -316,3 +316,28 @@ The trained models section.
 
 ![Trained Model Section](/machine-learning-using-elasticsearch/images/62-trained-models.png)
 
+### Inferring Against Incoming Data Using ML in Elasticsearch
+
+Now we are going to create an *ingest pipeline* and configure it to use the *machine learning model* which we created earlier using the *classification ml job*. 
+
+```python
+# We have to replace the model ID with the right Model ID from the Trained Modeled Section in ML App
+PUT _ingest/pipeline/ml-malicious-request
+{
+  "processors": [
+    {
+      "inference": {
+        "model_id": "classification-request-payloads-1697362970419",
+        "inference_config": {
+          "classification": {
+            "num_top_classes": 2,
+            "results_field": "predicion",
+            "top_classes_results_field": "probabilities"
+          }
+        }
+      }
+    }
+  ]
+}
+
+```
