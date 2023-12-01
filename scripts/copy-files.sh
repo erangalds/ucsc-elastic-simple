@@ -34,7 +34,9 @@ sudo cp /home/vagrant/data/elasticsearch/certs/ca/ca.crt /etc/logstash/certs/ca/
 # Copying the Sample Data and Loading Scripts
 cp -r /home/vagrant/data/webapp /home/vagrant/
 cp -r /home/vagrant/data/web-logs /home/vagrant/
-cp -r /home/vagrant/data/full-text/search /home/vagrant
+cp -r /home/vagrant/data/full-text-search /home/vagrant
+cp -r /home/vagrant/data/elastic-search-lab /home/vagrant
+
 # Setting the execution permission in the shell scripts
 chmod u+x /home/vagrant/webapp/*.sh
 chmod u+x /home/vagrant/web-logs/*.sh
@@ -47,4 +49,4 @@ dos2unix /home/vagrant/webapp/*
 dos2unix /home/vagrant/webapp/classification-model-test/*
 dos2unix /home/vagrant/web-logs/*
 dos2unix /home/vagrant/full-text-search/*
-
+dos2unix /home/vagrant/elasticsearch-search-lab/*
