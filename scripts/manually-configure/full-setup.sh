@@ -9,5 +9,7 @@ bash /home/vagrant/scripts/manually-configure/change-elastic-user-password.sh
 # Restarting the Elastic Search Cluster and Kibana Service
 bash /home/vagrant/scripts/manually-configure/restart-elastic-kibana-services.sh
 
+# Waiting for 60 seconds
+sleep 60
 # Starting the Beats
 bash /home/vagrant/scripts/manually-configure/start-beats.sh
