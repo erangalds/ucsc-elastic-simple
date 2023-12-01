@@ -43,4 +43,8 @@ chmod u+x /home/vagrant/scripts/manually-configure/*.sh
 
 dos2unix /home/vagrant/scripts/*.sh
 dos2unix /home/vagrant/scripts/manually-configure/*.sh
+dos2unix /home/vagrant/webapp/*
+dos2unix /home/vagrant/webapp/classification-model-test/*
+dos2unix /home/vagrant/web-logs/*
+dos2unix /home/vagrant/full-text-search/*
 
