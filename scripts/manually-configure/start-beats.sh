@@ -17,22 +17,22 @@ sudo systemctl daemon-reload
 echo "Enabling and Starting metricbeat"
 sudo systemctl enable metricbeat.service
 sudo systemctl restart metricbeat.service
-sudo systemctl status metricbeat.service
+sudo systemctl is-active metricbeat.service
 
 # Enabling Filebeat
 echo "Enabling and Starting filebeat"
 sudo systemctl enable filebeat.service
 sudo systemctl restart filebeat.service
-sudo systemctl status filebeat.service
+sudo systemctl is-active filebeat.service
 
 # Enabling Packetbeat
 echo "Enabling and Starting packetbeat"
 sudo systemctl enable packetbeat.service
 sudo systemctl restart packetbeat.service
-sudo systemctl status packetbeat.service
+sudo systemctl is-active packetbeat.service
 
 # Enabling Auditbeat
 echo "Enabling and Starting auditbeat"
 sudo systemctl enable auditbeat.service
 sudo systemctl restart auditbeat.service
-sudo systemctl status auditbeat.service
+sudo systemctl is-active auditbeat.service
