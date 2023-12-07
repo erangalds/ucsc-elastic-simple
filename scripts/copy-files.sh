@@ -49,4 +49,4 @@ dos2unix /home/vagrant/webapp/*
 dos2unix /home/vagrant/webapp/classification-model-test/*
 dos2unix /home/vagrant/web-logs/*
 dos2unix /home/vagrant/full-text-search/*
-dos2unix /home/vagrant/elasticsearch-search-lab/*
+dos2unix /home/vagrant/elastic-search-lab/*
