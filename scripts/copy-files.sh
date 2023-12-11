@@ -37,6 +37,8 @@ cp -r /home/vagrant/data/web-logs /home/vagrant/
 cp -r /home/vagrant/data/full-text-search /home/vagrant
 cp -r /home/vagrant/data/elastic-search-lab /home/vagrant
 
+sudo chown -R vagrant:vagrant .
+
 # Setting the execution permission in the shell scripts
 chmod u+x /home/vagrant/webapp/*.sh
 chmod u+x /home/vagrant/web-logs/*.sh

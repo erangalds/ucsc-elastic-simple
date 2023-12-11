@@ -17,9 +17,10 @@ Vagrant.configure("2") do |config|
   config.vm.network "public_network", bridge: "Default Switch", ip: "172.31.52.67", netmask: "20"
   # VirtualBox Users Please use the below network configuration statement 
   #config.vm.network "private_network", ip: "172.31.52.67"
+  #config.vm.network "public_network"
   # If you don't have enough RAM on your laptop / desktop you can set the VM RAM by below configuration setting
   # The default is 2GB for a VM. But you can change that as below
-  #config.vm.memory = 1024
+  config.vm.memory = 4096
 
   # Invoking the Elastic Install Script
   config.vm.provision "shell", path: "scripts/install-elk.sh"
