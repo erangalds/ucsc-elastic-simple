@@ -22,8 +22,8 @@ Vagrant.configure("2") do |config|
   # The default is 2GB for a VM. But you can change that as below
   config.vm.provider "hyperv" do |v|
     #v.memory = "4096"  # Sets the memory to 2 GB
-    v.maxmemory = "4096"
-    v.memory = "4096"
+    v.maxmemory = "6144"
+    v.memory = "6144"
   end
   
 
