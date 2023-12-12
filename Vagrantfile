@@ -20,7 +20,12 @@ Vagrant.configure("2") do |config|
   #config.vm.network "public_network"
   # If you don't have enough RAM on your laptop / desktop you can set the VM RAM by below configuration setting
   # The default is 2GB for a VM. But you can change that as below
-  config.vm.memory = 4096
+  config.vm.provider "hyperv" do |v|
+    #v.memory = "4096"  # Sets the memory to 2 GB
+    v.maxmemory = "4096"
+    v.memory = "4096"
+  end
+  
 
   # Invoking the Elastic Install Script
   config.vm.provision "shell", path: "scripts/install-elk.sh"
