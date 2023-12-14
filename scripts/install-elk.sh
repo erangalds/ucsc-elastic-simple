@@ -19,6 +19,9 @@ sudo apt install filebeat
 sudo apt install metricbeat
 sudo apt install auditbeat
 sudo apt install packetbeat
+sudo apt install enterprise-search
+sudo apt install openjdk-21-jre-headless
+sudo apt install libjemalloc2
 #sudo apt install heartbeat
 
 # Deleting Folders if exists
@@ -29,6 +32,7 @@ sudo apt install packetbeat
 [ -d /etc/metricbeat/certs/ca ] && rm -rf /etc/metricbeat/certs/ca
 [ -d /etc/auditbeat/certs/ca ] && rm -rf /etc/auditbeat/certs/ca
 [ -d /etc/packetbeat/certs/ca ] && rm -rf /etc/packetbeat/certs/ca
+[ -d /enterprise-search ] && rm -rf /enterprise-search
 
 # Creating Required Folders
 sudo mkdir -p /etc/elasticsearch/certs/ca
@@ -39,4 +43,6 @@ sudo mkdir -p /etc/metricbeat/certs/ca
 sudo mkdir -p /etc/auditbeat/certs/ca
 sudo mkdir -p /etc/packetbeat/certs/ca
 sudo mkdir -p /etc/logstash/certs/ca
+sudo mkdir -p /enterprise-search/certs/ca
+sudo mkdir -p /enterprise-search/certs/elastic
 

@@ -31,6 +31,16 @@ sudo cp /home/vagrant/data/packetbeat/packetbeat.yml /etc/packetbeat/
 # Copying Certificate Authority Certificate to beats config folders
 sudo cp /home/vagrant/data/elasticsearch/certs/ca/ca.crt /etc/logstash/certs/ca/ca.crt
 
+# Copying Enterprise Search Files
+sudo cp /home/vagrant/data/elasticsearch/certs/ca/ca.crt /enterprise-search/certs/ca/
+sudo cp /home/vagrant/data/elasticsearch/certs/ca/ca.key /enterprise-search/certs/ca/
+sudo cp /home/vagrant/data/elasticsearch/certs/elastic/elastic.crt /enterprise-search/certs/elastic/
+sudo cp /home/vagrant/data/elasticsearch/certs/elastic/elastic.key /enterprise-search/certs/elastic/
+sudo cp /home/vagrant/data/enterprise-search/enterprise-search.yml /usr/share/enterprise-search/config/
+
+sudo chown -R enterprise-search:enterprise-search /enterprise-search/
+sudo chown -R enterprise-search:enterprise-search /usr/share/enterprise-search/
+
 # Copying the Sample Data and Loading Scripts
 cp -r /home/vagrant/data/webapp /home/vagrant/
 cp -r /home/vagrant/data/web-logs /home/vagrant/
@@ -51,4 +61,6 @@ dos2unix /home/vagrant/webapp/*
 dos2unix /home/vagrant/webapp/classification-model-test/*
 dos2unix /home/vagrant/web-logs/*
 dos2unix /home/vagrant/full-text-search/*
-dos2unix /home/vagrant/elastic-search-lab/*
+dos2unix /home/vagrant/elastic-search-lab/v1/search-tutorial/*
+dos2unix /home/vagrant/elastic-search-lab/v2/search-tutorial/*
+dos2unix /home/vagrant/elastic-search-lab/v3/search-tutorial/*
