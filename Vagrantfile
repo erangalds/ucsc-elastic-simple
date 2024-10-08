@@ -10,20 +10,16 @@ Vagrant.configure("2") do |config|
   # For a complete reference, please see the online documentation at
   # https://docs.vagrantup.com.
 
-  config.vm.box = "generic/ubuntu2304"
-  #config.vm.provider = "hyperv"
+  config.vm.box = "gusztavvargadr/ubuntu-desktop-2404-lts"
+  # Setting the Hostname
   config.vm.hostname = "elk-single-node"
-  # Hyper-V Users Plesae use the below network configuration statement
-  config.vm.network "public_network", bridge: "my-lab-external", ip: "192.168.1.51", netmask: "24"
-  # VirtualBox Users Please use the below network configuration statement 
-  #config.vm.network "private_network", ip: "172.31.52.67"
-  #config.vm.network "public_network"
-  # If you don't have enough RAM on your laptop / desktop you can set the VM RAM by below configuration setting
-  # The default is 2GB for a VM. But you can change that as below
-  config.vm.provider "hyperv" do |v|
-    # Configuring the Memory to be 16GB 
-    v.maxmemory = "16384"
-    v.memory = "16384"
+  config.vm.network "private_network", ip: "192.168.56.3"
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.boot_timeout = 600
+  # Configure the VM
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "16384"
+    vb.cpus = 6
   end
   
 
@@ -35,8 +31,6 @@ Vagrant.configure("2") do |config|
   
   # Invoking the Copy Files and File Permission Change Scripts
   config.vm.provision "shell", path: "scripts/copy-files.sh"
-  config.vm.provision "shell", path: "scripts/change-file-ownership.sh"
-  
-  #config.vm.provision "shell", path: "scripts/change-ip-to-static.sh"
+  config.vm.provision "shell", path: "scripts/change-file-ownership.sh"  
 end
 
