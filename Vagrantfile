@@ -5,12 +5,15 @@ Vagrant.configure("2") do |config|
   # Setting the Hostname
   config.vm.hostname = "elk-single-node"
   config.vm.network "private_network", ip: "192.168.56.3"
-  config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 80, host: 8080, guest_ip: "192.168.56.3"
+  config.vm.network "forwarded_port", guest: 5601, host: 5601, guest_ip: "192.168.56.3"
+  config.vm.network "forwarded_port", guest: 9200, host: 9200, guest_ip: "192.168.56.3"
   config.vm.boot_timeout = 600
   # Configure the VM
   config.vm.provider "virtualbox" do |vb|
-    vb.memory = "16384"
+    vb.memory = "18432"
     vb.cpus = 6
+    vb.name = "elastic-single-node"
   end
   # Invoking the Elastic Install Script
   config.vm.provision "shell", path: "scripts/install-elk.sh"

@@ -56,3 +56,38 @@ The full-setup script will take few minutes to finish the installation. Once the
 
 ![Kibana UI](/images/01-kibana-ui.png)
 
+### NOTE
+If you face an error in starting Kibana and Beats Services, please below steps to troubleshoot them. 
+
+Check whether `kibana.service` is running on not
+
+```bash
+sudo systemctl status kibana.service
+```
+
+If `kibana.service` is not running then we need to find out why its not working. Therefore we have to look at the `systemd` *logs* 
+
+```bash
+sudo journalctl -u kibana.service
+```
+
+Check whether you see below error. 
+
+![Kibana Error](/images/20-kibana-error-dns-result-order.png)
+
+If that is the error, then follow the below steps to resolve the error. 
+
++ Step 1 - Go to `/lib/systemd/system` folder
++ Step 2 - Edit the `kibana.service` file and enter the line `Environment="NODE_OPTIONS=--dns-result-order=ipv4first"` under the `[service]` section of the file. 
++ Step 3 - Then *reload* the config file with `sudo systemctl daemon-reload` and then *restart* the service `sudo systemctl restart kibana.service`
++ Step 4 - Next check Beats Services with `sudo systemctl status filebeat.service` if not started we can try to restart `sudo systemctl restart filebeat.service`
++ Step 5 - Restart all the other beats similarly 
+    + Metric Beat : `sudo systemctl restart metricbeat.service` 
+    + Audit Beat : `sudo systemctl restart auditbeat.service`  
+    + Packet Beat : `sudo systemctl restart packetbeat.service`
+
+
+
+
+
+
