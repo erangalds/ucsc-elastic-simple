@@ -407,6 +407,167 @@ GET ilm-web-logs*/_search
 
 
 ```
+#### Example Scenario:
+Min Age:
+In the hot phase, the min_age: "1d" means that an index must be at least 1 day old before any actions specified in the hot phase can be applied.
+
+#### Rollover:
+The rollover action in the hot phase specifies that the index should be rolled over when either of the following conditions is met:
+
+The index reaches an age of 30 days (max_age: "30d")
+
+The index reaches a size of 50 GB (max_size: "50gb")
+
+#### Detailed Explanation with a Timeline:
++ Day 1: An index is created.
+
++ Day 2: The index is now 1 day old (meeting the min_age criterion), so the hot phase actions can start to apply. However, the rollover conditions have not yet been met because the index is neither 30 days old nor 50 GB in size.
+
++ Day 10: The index continues to age but is still not 30 days old and has not reached 50 GB in size. The index remains in the hot phase.
+
++ Day 30: The index reaches the max_age condition of 30 days. Since the max_age condition is met, the index rolls over to a new index.
+
++ Day 31: A new index starts, and the previous index moves to the next phase according to the ILM policy.
+
+#### Summary:
++ Min Age (min_age: "1d"): This sets a minimum threshold age that must be met before any actions specified in the phase can be applied.
+
++ Rollover (max_age: "30d", max_size: "50gb"): These conditions dictate when the index should be rolled over to a new index. Whichever condition is met first (30 days old or 50 GB in size) will trigger the rollover action.
+
+This way, the index lifecycle is managed efficiently, ensuring data is rolled over and stored appropriately based on the defined criteria.
+
+To move data into different hardware using Elasticsearch ILM policies, you can configure the following settings:
+
+1.  Data Tiers: Define hot, warm, and cold data tiers to manage indices based on their lifecycle.
+
+2. Rollover Settings: Configure rollover conditions to create new indices when the current index reaches a certain size or age.
+
+3. Shrink and Force Merge: Reduce the number of primary shards and merge index segments to optimize storage.
+
+4. Replicas and Read-Only: Adjust the number of replicas and mark indices as read-only when they move to less performant hardware.
+
+5. Delete Phase: Define conditions for deleting old indices to free up space.
+
+Here's an example configuration:
+
+```python
+PUT _ilm/policy/logs-policy
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "1d",
+        "actions": {
+          "rollover": {
+            "max_age": "30d",
+            "max_size": "50gb"
+          }
+        }
+      },
+      "warm": {
+        "min_age": "1d",
+        "actions": {
+          "shrink": {
+            "number_of_shards": 1
+          },
+          "force_merge": {
+            "segments": 1
+          }
+        }
+      },
+      "cold": {
+        "min_age": "7d",
+        "actions": {
+          "allocate": {
+            "node": "data_cold"
+          }
+        }
+      },
+      "delete": {
+        "min_age": "30d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}
+
+```
+
+Additionally, for the data to be moved automatically, within the different `data nodes` within the `elasticsearch cluster` we need to specifically define the `type of data node` in the `elasticsearch.yml` file. 
+
++ For HOT Node: 
+```yml
+# elasticsearch.yml
+node.roles: ["data_hot"]
+```
+
++ For WARM Nodes: 
+```yml
+# elasticsearch.yml
+node.roles: ["data_warm"]
+```
+
++ For COLD Nodes:
+```yml
+# elasticsearch.yml
+node.roles: ["data_cold"]
+```
+
+The ILM Policy for that 
+
+```json
+PUT _ilm/policy/logs-policy
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "0ms",
+        "actions": {
+          "rollover": {
+            "max_age": "30d",
+            "max_size": "50gb"
+          }
+        }
+      },
+      "warm": {
+        "min_age": "30d",
+        "actions": {
+          "allocate": {
+            "require": {
+              "data": "warm"
+            }
+          },
+          "forcemerge": {
+            "max_num_segments": 1
+          }
+        }
+      },
+      "cold": {
+        "min_age": "60d",
+        "actions": {
+          "allocate": {
+            "require": {
+              "data": "cold"
+            }
+          }
+        }
+      },
+      "delete": {
+        "min_age": "90d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}
+```
+
+
+
+
 
 ## Data Streams
 
