@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
   # Configure the VM
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "18432"
-    vb.cpus = 6
+    vb.cpus = 2
     vb.name = "elastic-single-node"
   end
   # Invoking the Elastic Install Script

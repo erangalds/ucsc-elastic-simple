@@ -2,6 +2,27 @@
 
 *Elasticsearch* is a well known for its *searching* capabilities. *Elasticsearch* supports *full-text* search as a main core feature. The platform is widely used around the world by *E-commerse* web sites speacially to provide *product searching* for their customers. Also it can be used to *product recommendations* by showing similar products to the users. 
 
+Let's setup the lab for the *full-text search*
+
+```bash
+cd /home/vagrant/full-text-search
+ls -alrt
+# Set the Execusion bit of the scripts
+chmod u+x *.sh
+# Let's setup the indexes
+bash setup-index.sh
+# Load the Data
+bash ingest-recipes-data.sh
+```
+
+Let's verify for data loading
+```python
+# Let's do a basic full search of the entire index
+GET recipes/_search
+```
+
+
+
 ## An Introduction to Full-Text Searching
 The simplest way to search something is by trying to match the search term or text with the data in our database. In *Elasticsearch* this type of searching is called *term searching* and *term-level queries* are used for that. *Term searching* is useful when we know exactly what we need to search and most of the time that is not the case. Most of the time, we don't know exactly what we want to search for but have some wage idea about what we want to search. 
 
@@ -20,6 +41,21 @@ GET recipes/_search
     }
   }
 }
+
+# If we want to pull only the title of the recipes
+GET recipes/_search
+{
+  "_source": ["title"], 
+  "query": {
+    "terms": {
+      "author": [
+        "Staff",
+        "Jim Mar"
+      ]
+    }
+  }
+}
+
 ```
 
 We can see that we can easily get all the recipes published by the two authors. However, let's now consider a slightly different scenario, where a user doesn't know authors name exactly but wants to search for recipes such as chicken pie or tomato soup. This kind of requirement is a bit tough for *term-level queries*. 

@@ -28,14 +28,18 @@ The number of primary shards and replica shards can be configured. The primary s
 
 The number of replica shards can be changed dynamically to improve the read performance and hence it supports increasing and decreasing the replica shard count. But changing replica shards has a huge compute power and storage space impact, therefore careful thought needs to be given before doing that. 
 
+
 ```python
-PUT /test-index
+# Let's create an index with different shard settings. 
+PUT /my-index-with-multiple-shards-and-replicas
 {
     "settings": {
         "number_of_shards": 3,
         "number_of_replicas": 1
     }
 }
+# Let's see what just got created
+GET /my-index-with-multiple-shards-and-replicas
 ```
 
 Elasticsearch in the backend tries to evenly distribute the data across the primary shards to keep the performance of each primary shard in optimum level. 
@@ -84,18 +88,25 @@ We can get a list of all the indices in the cluster as below.
 GET _cat/indices
 ```
 
-Let us know create an index with 3 primary shards and 1 replica shard. 
+Let us create an index both with default *shard* settings and with explicitly defined *shard* settings. 
 
 ```python
-PUT my-other-index
+# We can create an index using PUT method
+PUT my-index-with-default-settings
+
+# Let's check what got created. 
+GET my-index-with-default-settings
+
+# Let's create an index with different shard settings. 
+PUT my-index-with-multiple-shards-and-replicas
 {
-  "settings": {
-    "index": {
-      "number_of_shards": 3,
-      "number_of_replicas": 1
+    "settings": {
+        "number_of_shards": 3,
+        "number_of_replicas": 1
     }
-  }
 }
+# Let's see what just got created
+GET my-index-with-multiple-shards-and-replicas
 ```
 
 > ### Tips
@@ -185,7 +196,7 @@ Earlier during our exercises we didn't specify a mapping explicitly. Therefore, 
 POST my-index/_doc
 {
   "name": "Yometh",
-  "age": 6
+  "age": 6,
   "city": "Perth",
   "country": "Australia",
   "weight": "18.5kg"
@@ -203,7 +214,7 @@ We can see that the field *age* is mapped to type *long* and *weight* is mapped 
 POST my-index/_doc
 {
   "name": "Yometh",
-  "age": 6
+  "age": 6,
   "city": "Perth",
   "country": "Australia",
   "weight": "18.5"
@@ -248,6 +259,8 @@ PUT my-explicit-index
   }
 }
 
+# Let's check for what got created
+GET my-explicit-index
 ```
 
 Let's see whether we can change the mapping once defined. Let's try to define the mapping again by changing the data type of population_M to a floating point. 
@@ -314,7 +327,9 @@ Geo location data (lattitude, longititude pairs) can be mapped as geo_point on e
 
 + object
 
-This is used for complex data structures. *object* data type can be used to represent an inner object in the primary JSON document. Whenever a document field has a subfields will be mapped to type *object* by default. Objects allow you to clear. 
+This is used for complex data structures. *object* data type can be used to represent an inner object in the primary JSON document. Whenever a document field has a subfields will be mapped to type *object* by default. Objects allow you to be clear. 
+
+Let's say we have the below *data record* to get *indexed* into *elasticsearch* 
 
 example: 
 ```python
@@ -341,6 +356,61 @@ example:
     "http.version": "1.1",
     "@timestamp": "2023-10-23T01:12:23.431Z"
 }
+
+# If we have data like above, let's see how we can define the index
+PUT my-object-type-index
+{
+  "mappings": {
+    "properties": {
+      "event": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "keyword"
+          },
+          "status": {
+            "type": "keyword"
+          }
+        }
+      },
+      "http": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "integer"
+              }
+            }
+          },
+          "version": {
+            "type": "keyword"
+          }
+        }
+      }
+    }
+  }
+}
+
+# We can index the documents as below. 
+PUT my-object-type-index/_doc/1
+{
+    "event": {
+        "type": "http",
+        "status": "complete"
+    },
+    "http": {
+        "response": {
+            "code": 500
+        },
+        "version": "1.1"
+    },
+    "@timestamp": "2023-10-23T01:12:23.431Z"
+}
+
+# Let's check the indexed record.
+GET my-object-type-index/_search
 ```
 
 + array
@@ -366,6 +436,47 @@ example:
     "event.status": "green",
     "tags": ["Production", "Finance", "Nginx", "Web Server","US"]
 }
+
+# Let's say how we can define an index to handle data records as above. 
+PUT my-log-index
+{
+  "mappings": {
+    "properties": {
+      "event": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "text"
+          },
+          "status": {
+            "type": "keyword"
+          }
+        }
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "@timestamp": {
+        "type": "date"
+      }
+    }
+  }
+}
+
+POST my-log-index/_doc/1
+{
+  "event": {
+    "message": "CRM is up - 23 Oct 23",
+    "status": "green"
+  },
+  "tags": ["Production", "Finance", "Nginx", "Web Server", "US"],
+  "@timestamp": "2023-10-23T01:12:23.431Z"
+}
+
+# Let's see the mapping
+GET my-log-index/_mapping
+# Let's see the indexed data record
+GET my-log-index/_search
 ```
 
 + nested
@@ -714,7 +825,7 @@ PUT department-employees/_doc/d3
 
 # Let us now index some employees into the index
 
-PUT department-employees/_doc/e1?routing=3
+PUT department-employees/_doc/e1?routing=d3
 {
   "employee_id": "E001",
   "employee_name": "Kasun",
@@ -725,7 +836,7 @@ PUT department-employees/_doc/e1?routing=3
   }
 }
 
-PUT department-employees/_doc/e2?routing=3
+PUT department-employees/_doc/e2?routing=d3
 {
   "employee_id": "E002",
   "employee_name": "Amali",
@@ -736,7 +847,7 @@ PUT department-employees/_doc/e2?routing=3
   }
 }
 
-PUT department-employees/_doc/e3?routing=2
+PUT department-employees/_doc/e3?routing=d2
 {
   "employee_id": "E003",
   "employee_name": "Eranga",
