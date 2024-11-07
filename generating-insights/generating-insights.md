@@ -566,9 +566,6 @@ PUT _ilm/policy/logs-policy
 ```
 
 
-
-
-
 ## Data Streams
 
 Managing the time-series data is very easy with the ILM policies. But one drawback is having to create the *bootstrap index". Elasticsearch has come with a even better solution which they call as ***data streams***. *Data Streams* are built on top of ILM features. They automatically create the ILM related components. *Data Streams* also provides a single / uniform resource name to help write and consume data and hide the complexity of underlying elasticsearch indices from the consumer. 
@@ -605,19 +602,19 @@ GET _data_stream/logs-datastream-web-server
 ## Indexing a document
 POST logs-datastream-web-server/_doc
 {
- "timestamp": "2023-10-24T03:00:00.000Z",
+ "@timestamp": "2023-10-24T03:00:00.000Z",
  "log": "server is up"
 }
 
 POST logs-datastream-web-server/_doc
 {
- "timestamp": "2023-10-24T04:00:00.000Z",
+ "@timestamp": "2023-10-24T04:00:00.000Z",
  "log": "server is up"
 }
 
 POST logs-datastream-web-server/_doc
 {
- "timestamp": "2023-10-24T05:00:00.000Z",
+ "@timestamp": "2023-10-24T05:00:00.000Z",
  "log": "server is up"
 }
 
