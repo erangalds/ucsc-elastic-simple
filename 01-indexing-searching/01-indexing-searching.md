@@ -12,17 +12,17 @@ The indices in elasticsearch are actually ***inverted indices**.
 
 Let's take two documents (eg. example data records) which we want to store in an elasticsearch index to search for. 
 
-![Inverted Index in Elasticsearch](/indexing-searching/images/inverted-index.png)
+![Inverted Index in Elasticsearch](/01=indexing-searching/images/inverted-index.png)
 
 As we can see in the above diagram, the documents when they get indexed into the index, elasticsearch analyzes the document, and tokenizers the document then keeps the total count of the tokens (which is equal to a word in this example). 
 
 An index is made up or one or more primary shards. Then for resiliency the primary shards are replicated to different elasticsearach hosts to make replica shards. Below we can see how the index is split into multiple primary shards. This is mainly done to improve the write performance into an elasticsearch shards. As a best practice the primary shards are spread across multiple elastcsearch hosts to improve the write performance.
 
-![Index Splitted into multiple Primary Shards](/indexing-searching/images/index-splitted-into-primary-shards.png)
+![Index Splitted into multiple Primary Shards](/01-indexing-searching/images/index-splitted-into-primary-shards.png)
 
 The below figure, shows how each primary shard is replicated into other elastisearch nodes to create replica shards. This is done mainly to improve the data resiliency in case of a elasticsearch node failure. Replica shards are mainly used for read requests (searching requests from users / apps).
 
-![Primary Shards and Replica Shards](/indexing-searching/images/primary-shards-replica-shards.png)
+![Primary Shards and Replica Shards](/01-indexing-searching/images/primary-shards-replica-shards.png)
 
 The number of primary shards and replica shards can be configured. The primary shards count has to be defined at the time we create the index and not allowed to change one defined. The only way to change the number of primary shards is by reindexing the data into a new index. 
 
