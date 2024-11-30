@@ -12,7 +12,7 @@ The indices in elasticsearch are actually ***inverted indices**.
 
 Let's take two documents (eg. example data records) which we want to store in an elasticsearch index to search for. 
 
-![Inverted Index in Elasticsearch](/01=indexing-searching/images/inverted-index.png)
+![Inverted Index in Elasticsearch](/01-indexing-searching/images/inverted-index.png)
 
 As we can see in the above diagram, the documents when they get indexed into the index, elasticsearch analyzes the document, and tokenizers the document then keeps the total count of the tokens (which is equal to a word in this example). 
 
@@ -58,7 +58,7 @@ Let us get our hands dirty now.
 >
 > Below is the actual Dev Tools interface
 > 
-> ![Kibana Dev Tools interface](/indexing-searching/images/kibana-dev-tools-interface.png) 
+> ![Kibana Dev Tools interface](/01-indexing-searching/images/kibana-dev-tools-interface.png) 
 >
 
 Let's log into the Kibana Dev Tools and check for the health of our elasticsearch cluster. 
