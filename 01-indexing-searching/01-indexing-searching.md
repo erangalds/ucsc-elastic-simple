@@ -54,7 +54,7 @@ Let us get our hands dirty now.
 > 
 > Using the main Kibana Menu we can select Dev Tools under Section - Management 
 >
-> ![Kibana Dev tools for Query building and testing](/indexing-searching/images/kibana-dev-tools-in-main-kibana-menu.png)
+> ![Kibana Dev tools for Query building and testing](/01-indexing-searching/images/kibana-dev-tools-in-main-kibana-menu.png)
 >
 > Below is the actual Dev Tools interface
 > 
