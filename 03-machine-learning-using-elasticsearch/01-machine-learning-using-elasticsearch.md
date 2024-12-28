@@ -37,7 +37,7 @@ GET webapp-tagged/_search
 
 First we need to select the Statck Management App from the Kibana Main memu. 
 
-![Setting up a Data View using the Web App Index](/01-machine-learning-using-elasticsearch/images/01-create-data-view-webapp-data.png)
+![Setting up a Data View using the Web App Index](images/01-create-data-view-webapp-data.png)
 
 Then we need to create a new Data View using the Webapp Index pattern. 
 
