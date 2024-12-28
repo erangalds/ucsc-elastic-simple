@@ -197,19 +197,19 @@ Before we can create any visualizations first thing we need to do is to create a
 
 * Select ***Stack Management*** option from the ***Main Kibana Menu*** 
 
-![Select Stack Management from Main Kibana Menu](/generating-insights/images/creating-a-data-view-select-stack-management.png)
+![Select Stack Management from Main Kibana Menu](/02-generating-insights/images/creating-a-data-view-select-stack-management.png)
 
 * Select ***Data View*** option from the ***Kibana Stack Management Menu***
 
-![Select Data View from Kibana Stack Management Menu](/generating-insights/images/creating-a-data-view-select-data-view.png)
+![Select Data View from Kibana Stack Management Menu](/02-generating-insights/images/creating-a-data-view-select-data-view.png)
 
 * Create a New Data View
 
-![Create a New Data View with the Web-logs Index Data](/generating-insights/images/create-a-data-view-with-a-select-index-pattern.png)
+![Create a New Data View with the Web-logs Index Data](/02-generating-insights/images/create-a-data-view-with-a-select-index-pattern.png)
 
 * Data View created
 
-![Data view gets created](/generating-insights/images/data-view-created-for-web-logs-data.png)
+![Data view gets created](/02-generating-insights/images/data-view-created-for-web-logs-data.png)
 
 ### Step 2 - Creating a Dashboard
 
@@ -219,27 +219,27 @@ Once the data view is created, then we can use that data view to create a dashbo
 
 Selec the Dashboard option from the main Kibana Menu and then select ***Create Visualization*** option. 
 
-![Select Dashboard option from the main Kibana menu](/generating-insights/images/creating-a-dashboard-select-dashboard.png)
+![Select Dashboard option from the main Kibana menu](/02-generating-insights/images/creating-a-dashboard-select-dashboard.png)
 
 * Select web-logs index as the data view and last 3 months as the time frame
 
-![Select web-logs index as the data view and last 3 months as the time frame](/generating-insights/images/select-web-logs-index-pattern-last-3-months.png)
+![Select web-logs index as the data view and last 3 months as the time frame](/02-generating-insights/images/select-web-logs-index-pattern-last-3-months.png)
 
 * Creat the hourly breakdown of Sum of http.response.bytes Chart
 
-![Create the hourly breakdown of Sum of http.response.bytes Chart](/generating-insights/images/23rd-response-body-bytes-sum-by-hour.png)
+![Create the hourly breakdown of Sum of http.response.bytes Chart](/02-generating-insights/images/23rd-response-body-bytes-sum-by-hour.png)
 
 * Save the Dashboard with a name with the first visualization
 
-![Save the Dashboard with a name with the first visualization](/generating-insights/images/save-dashboard-with-a-dashboard-name.png)
+![Save the Dashboard with a name with the first visualization](/02-generating-insights/images/save-dashboard-with-a-dashboard-name.png)
 
 * Creat the hourly breakdown of the sum of http.response.bytes Chart with User_Agent Legend
 
-![Creat the hourly breakdown of the sum of http.response.bytes Chart with User_Agent Legend](/generating-insights/images/response-body-bytes-sum-by-user-agent-23rd-26th-oct.png)
+![Creat the hourly breakdown of the sum of http.response.bytes Chart with User_Agent Legend](/02-generating-insights/images/response-body-bytes-sum-by-user-agent-23rd-26th-oct.png)
 
 * You can add more visualizations following the same steps. 
 
-![Final Dashboard](/generating-insights/images/Final%20Dashboard.png)
+![Final Dashboard](/02-generating-insights/images/Final%20Dashboard.png)
 
 
 ## Looking into Index Life Cycle Management
@@ -248,7 +248,7 @@ Most of the machine generated data captured by reading log files, doesn't change
 
 Below figure explains the general usefulness of the data over time. 
 
-![usefulness of data over time](/generating-insights/images/usefulness-of-data-over-time.png)
+![usefulness of data over time](/02-generating-insights/images/usefulness-of-data-over-time.png)
 
 As the number of machines increase, the data volumes can quickly increase. Eventually it will be expensive to ingest and retain all of the data in the same high performing disks. Therefore as the data reaches a certain age, we can slowly move the data into more cheaper storage devices. 
 
@@ -287,7 +287,7 @@ Below are basic concepts of ILM:
 
 Below figure explains the ILM concepts. 
 
-![ILM Concepts](/generating-insights/images/ilm-index-rollover.png)
+![ILM Concepts](/02-generating-insights/images/ilm-index-rollover.png)
 
 Let's get our hands dirty again with ILM Policies
 
